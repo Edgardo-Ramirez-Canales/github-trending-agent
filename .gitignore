@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables de entorno con secretos reales
+.env
+.env.local
+.env.*.local
+
+# Prompt con credenciales reales — NO subir
+PROMPT_CLAUDE_CODE.md
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Config local de Claude Code (personal, no compartir)
+.claude/settings.local.json
+
+# Supabase local
+supabase/.temp/

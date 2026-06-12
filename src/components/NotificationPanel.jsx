@@ -1,0 +1,90 @@
+// Panel de notificaciones: lista repo, tipo de evento, fecha y enlace al PR/issue.
+// Permite marcar como leída individual o todas.
+const TIPO_META = {
+  pr_aceptado: { txt: 'PR aceptado', cls: 'text-emerald-300' },
+  pr_rechazado: { txt: 'PR rechazado', cls: 'text-red-300' },
+  issue_respondido: { txt: 'Issue respondido', cls: 'text-sky-300' },
+}
+
+export default function NotificationPanel({
+  notificaciones,
+  onMarcarLeida,
+  onMarcarTodas,
+  onCerrar,
+}) {
+  return (
+    <div className="absolute right-0 top-12 z-30 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl bg-slate-800 shadow-2xl ring-1 ring-slate-700">
+      <div className="flex items-center justify-between border-b border-slate-700 px-4 py-2.5">
+        <h3 className="text-sm font-semibold text-slate-100">Notificaciones</h3>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onMarcarTodas}
+            className="text-xs text-slate-400 hover:text-slate-200"
+          >
+            Marcar todas
+          </button>
+          <button
+            type="button"
+            onClick={onCerrar}
+            className="text-slate-400 hover:text-slate-200"
+            aria-label="Cerrar panel"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div className="max-h-96 overflow-auto">
+        {notificaciones.length === 0 ? (
+          <p className="px-4 py-8 text-center text-sm text-slate-500">
+            Sin notificaciones todavía.
+          </p>
+        ) : (
+          <ul className="divide-y divide-slate-700/60">
+            {notificaciones.map((n) => {
+              const meta = TIPO_META[n.tipo] || { txt: n.tipo, cls: 'text-slate-300' }
+              return (
+                <li
+                  key={n.id}
+                  className={
+                    'px-4 py-3 text-sm ' + (n.leida ? 'opacity-60' : 'bg-slate-700/20')
+                  }
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={'text-xs font-semibold ' + meta.cls}>
+                      {meta.txt}
+                    </span>
+                    {!n.leida && (
+                      <button
+                        type="button"
+                        onClick={() => onMarcarLeida(n.id)}
+                        className="text-xs text-slate-400 hover:text-slate-200"
+                      >
+                        Marcar leída
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-1 text-slate-200">{n.mensaje}</p>
+                  <div className="mt-1 flex items-center justify-between text-xs text-slate-500">
+                    <span>{new Date(n.fecha).toLocaleString('es')}</span>
+                    {n.url && (
+                      <a
+                        href={n.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-400 hover:underline"
+                      >
+                        Ver ↗
+                      </a>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
