@@ -6,6 +6,7 @@ import { registrarRepoVisto } from './services/supabase.js'
 import LoginScreen from './components/LoginScreen.jsx'
 import TokenInput from './components/TokenInput.jsx'
 import AIProviderSelector from './components/AIProviderSelector.jsx'
+import PanelPerfil from './components/PanelPerfil.jsx'
 import RepoCard from './components/RepoCard.jsx'
 import RepoDetail from './components/RepoDetail.jsx'
 import NotificationBadge from './components/NotificationBadge.jsx'
@@ -35,9 +36,8 @@ export default function App() {
 // Vista autenticada (separada para que los hooks de notificaciones sean válidos).
 // ----------------------------------------------------------------------------
 function AppAutenticado({ usuario, onCerrarSesion }) {
-  const { notificaciones, noLeidas, marcarLeida, marcarTodas } = useContributions(
-    usuario.email,
-  )
+  const { contribuciones, notificaciones, noLeidas, marcarLeida, marcarTodas } =
+    useContributions(usuario.email)
   const [panelAbierto, setPanelAbierto] = useState(false)
 
   return (
@@ -81,9 +81,11 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-5 py-6">
+      <main className="mx-auto max-w-7xl space-y-4 px-5 py-6">
+        <PanelPerfil usuario={usuario} contribuciones={contribuciones} />
+
         <section className="grid gap-4 md:grid-cols-2">
-          <TokenInput />
+          <TokenInput contribuciones={contribuciones} />
           <AIProviderSelector />
         </section>
 
