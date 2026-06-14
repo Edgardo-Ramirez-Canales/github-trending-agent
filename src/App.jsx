@@ -17,7 +17,7 @@ export default function App() {
   if (cargando) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
-        <p className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-slate-400 shadow-2xl shadow-black/30">
+        <p className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-[#8a8f98] shadow-2xl shadow-black/30">
           Cargando sesión…
         </p>
       </div>
@@ -42,16 +42,16 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#080b12]/86 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-white/[0.08] bg-[#08090a]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
-          <h1 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-100">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#007ACC] shadow-[0_0_18px_rgba(0,122,204,0.8)]" />
+          <h1 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-[#f7f8f8]">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#007ACC] shadow-[0_0_10px_rgba(0,122,204,0.5)]" />
             <span className="text-[#7cc7ff]">EDR Labs</span>
-            <span className="text-slate-600">/</span>
+            <span className="text-[#4a4d54]">/</span>
             <span>GitHub Trending Agent</span>
           </h1>
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-400 sm:inline">
+            <span className="hidden text-sm text-[#8a8f98] sm:inline">
               {usuario.user_metadata?.user_name || usuario.email}
             </span>
 
@@ -73,7 +73,7 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
             <button
               type="button"
               onClick={onCerrarSesion}
-              className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-slate-200 shadow-sm transition hover:border-white/15 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
+              className="rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-[#e1e3e6] shadow-sm transition hover:border-white/[0.1] hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
             >
               Cerrar sesión
             </button>
@@ -157,10 +157,10 @@ function TrendingSection() {
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a8f98]">
           Repos trending
           {!cargando && (
-            <span className="ml-2 rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 text-xs font-medium normal-case tracking-normal text-slate-300">
+            <span className="ml-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-xs font-medium normal-case tracking-normal text-[#c4c7cc]">
               {visibles.length} mostrados
             </span>
           )}
@@ -168,16 +168,16 @@ function TrendingSection() {
         <button
           type="button"
           onClick={recargar}
-          className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-slate-200 transition hover:border-[#007ACC]/50 hover:bg-[#007ACC]/10"
+          className="rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-sm text-[#e1e3e6] transition hover:border-[#007ACC]/50 hover:bg-[#007ACC]/10"
         >
           Recargar
         </button>
       </div>
 
       {/* Filtros */}
-      <div className="mt-4 grid gap-4 rounded-lg border border-white/10 bg-[#0d111a]/78 p-4 shadow-2xl shadow-black/20 md:grid-cols-2">
+      <div className="mt-4 grid gap-4 rounded-lg border border-white/[0.08] bg-[#0e0f11] p-4 shadow-2xl shadow-black/20 md:grid-cols-2">
         <div>
-          <label className="text-xs font-medium text-slate-400">
+          <label className="text-xs font-medium text-[#8a8f98]">
             Estrellas mínimas: {minEstrellas.toLocaleString('es')}
           </label>
           <input
@@ -187,12 +187,12 @@ function TrendingSection() {
             step="100"
             value={minEstrellas}
             onChange={(e) => setMinEstrellas(Number(e.target.value))}
-            className="mt-2 w-full accent-[#007ACC]"
+            className="mt-2 w-full ctrl-range"
           />
         </div>
 
         <div>
-          <label htmlFor="kw" className="text-xs font-medium text-slate-400">
+          <label htmlFor="kw" className="text-xs font-medium text-[#8a8f98]">
             Keyword / tópico
           </label>
           <input
@@ -201,15 +201,15 @@ function TrendingSection() {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="ej: cli, ai, rust…"
-            className="mt-1 w-full rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] placeholder:text-[#4a4d54] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
           />
         </div>
 
         <div className="md:col-span-2">
-          <span className="text-xs font-medium text-slate-400">Lenguaje</span>
+          <span className="text-xs font-medium text-[#8a8f98]">Lenguaje</span>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {lenguajesDisponibles.length === 0 && (
-              <span className="text-xs text-slate-500">—</span>
+              <span className="text-xs text-[#62666d]">—</span>
             )}
             {lenguajesDisponibles.map((l) => (
               <button
@@ -220,7 +220,7 @@ function TrendingSection() {
                   'rounded-md px-2.5 py-1 text-xs font-medium transition ' +
                   (lenguajes.includes(l)
                     ? 'bg-[#007ACC]/18 text-sky-100 ring-1 ring-[#007ACC]/50'
-                    : 'bg-white/[0.04] text-slate-300 ring-1 ring-white/10 hover:bg-white/[0.07]')
+                    : 'bg-white/[0.04] text-[#c4c7cc] ring-1 ring-white/[0.08] hover:bg-white/[0.07]')
                 }
               >
                 {l}
@@ -230,14 +230,14 @@ function TrendingSection() {
         </div>
 
         <div>
-          <label htmlFor="orden" className="text-xs font-medium text-slate-400">
+          <label htmlFor="orden" className="text-xs font-medium text-[#8a8f98]">
             Ordenar por
           </label>
           <select
             id="orden"
             value={orden}
             onChange={(e) => setOrden(e.target.value)}
-            className="mt-1 w-full rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
+            className="mt-1 w-full rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
           >
             <option value="velocidad">Velocidad de crecimiento</option>
             <option value="estrellas">Total de estrellas</option>
@@ -248,7 +248,7 @@ function TrendingSection() {
 
       {/* Estados */}
       {cargando && (
-        <p className="mt-6 text-center text-slate-400">Buscando repos…</p>
+        <p className="mt-6 text-center text-[#8a8f98]">Buscando repos…</p>
       )}
       {error && (
         <div className="mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-300">
@@ -263,7 +263,7 @@ function TrendingSection() {
             <RepoCard key={r.id} repo={r} onSelect={abrirRepo} />
           ))}
           {visibles.length === 0 && (
-            <p className="col-span-full text-center text-slate-500">
+            <p className="col-span-full text-center text-[#62666d]">
               Ningún repo coincide con los filtros.
             </p>
           )}

@@ -4,7 +4,7 @@ const MODOS = [
     id: 'A',
     titulo: 'Modo A — Solo texto',
     desc: 'Genera el borrador completo. No toca GitHub. Tú actúas manualmente.',
-    chip: 'bg-slate-500/15 text-slate-300',
+    chip: 'bg-slate-500/15 text-[#c4c7cc]',
     anillo: 'ring-slate-400/50',
   },
   {
@@ -26,7 +26,7 @@ const MODOS = [
 export default function ModeSelector({ modo, onChange, disabled }) {
   return (
     <fieldset disabled={disabled} className="disabled:opacity-50">
-      <legend className="text-sm font-semibold text-slate-200">
+      <legend className="text-sm font-semibold text-[#e1e3e6]">
         Modo de acción
       </legend>
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -38,10 +38,10 @@ export default function ModeSelector({ modo, onChange, disabled }) {
               type="button"
               onClick={() => onChange?.(m.id)}
               className={
-                'flex flex-col gap-1.5 rounded-lg bg-[#101722]/78 p-4 text-left ring-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC] ' +
+                'flex flex-col gap-1.5 rounded-lg bg-[#121316] p-4 text-left ring-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC] ' +
                 (activo
-                  ? m.anillo + ' bg-[#111a27]'
-                  : 'ring-slate-700 hover:ring-slate-600')
+                  ? m.anillo + ' bg-[#17181b]'
+                  : 'ring-white/[0.08] hover:ring-white/[0.14]')
               }
             >
               <span
@@ -49,10 +49,10 @@ export default function ModeSelector({ modo, onChange, disabled }) {
               >
                 {m.id}
               </span>
-              <span className="text-sm font-semibold text-slate-100">
+              <span className="text-sm font-semibold text-[#f7f8f8]">
                 {m.titulo}
               </span>
-              <span className="text-xs text-slate-400">{m.desc}</span>
+              <span className="text-xs text-[#8a8f98]">{m.desc}</span>
             </button>
           )
         })}
