@@ -21,6 +21,7 @@ import {
 } from '../utils/categorias.js'
 import { detectarImpactoImports } from '../utils/diff.js'
 import DiffViewer from './DiffViewer.jsx'
+import { IconCheck, IconPencil, IconSkip, IconX } from './icons.jsx'
 
 // Orden de ejecución por riesgo: de menor a mayor (Docs → Mercado → Features → Código).
 const ORDEN_RIESGO = [
@@ -306,7 +307,7 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
   if (!seleccionadas.length) return null
 
   return (
-    <div className="mt-5 rounded-lg border border-[#007ACC]/30 bg-[#0d111a]/86 p-4 shadow-2xl shadow-black/20">
+    <div className="mt-5 rounded-lg border border-[#007ACC]/30 bg-[#0e0f11] p-4 shadow-2xl shadow-black/20">
       <h4 className="text-sm font-semibold text-[#d7efff]">
         Modo C — Agente completo
       </h4>
@@ -332,21 +333,22 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
       {fase === 'ejecutando' && (
         <div className="mt-4">
           {/* Cancelar todo — siempre visible, rojo, doble confirmación */}
-          <div className="sticky top-16 z-10 mb-4 flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#080b12]/95 p-2 shadow-xl shadow-black/25">
-            <span className="text-xs text-slate-400">
+          <div className="sticky top-16 z-10 mb-4 flex items-center justify-between gap-3 rounded-lg border border-white/[0.08] bg-[#0a0b0d]/95 p-2 shadow-xl shadow-black/25">
+            <span className="text-xs text-[#8a8f98]">
               {progreso || `Categoría ${idx + 1} de ${ordenRef.current.length}`}
             </span>
             <button
               type="button"
               onClick={clicCancelar}
               className={
-                'rounded-lg px-3 py-1.5 text-sm font-bold text-white transition ' +
+                'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold text-white transition ' +
                 (cancelConfirm
                   ? 'animate-pulse bg-red-600 hover:bg-red-700'
                   : 'bg-red-500 hover:bg-red-600')
               }
             >
-              {cancelConfirm ? '¿Seguro? Confirmar cancelar todo' : '❌ Cancelar todo'}
+              <IconX className="h-4 w-4" />
+              {cancelConfirm ? '¿Seguro? Confirmar cancelar todo' : 'Cancelar todo'}
             </button>
           </div>
 
@@ -401,7 +403,7 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
 
       {/* Cancelado */}
       {fase === 'cancelado' && (
-        <div className="mt-4 rounded-lg border border-white/10 bg-[#080b12] p-4 text-sm text-slate-300">
+        <div className="mt-4 rounded-lg border border-white/[0.08] bg-[#0a0b0d] p-4 text-sm text-[#c4c7cc]">
           Ejecución cancelada.
           {prsAbiertos.length > 0 && ' Revisa el panel de notificaciones / GitHub.'}
         </div>
@@ -416,7 +418,7 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
 function ResumenConsolidado({ orden, analisis, prMode, setPrMode, onConfirmar }) {
   return (
     <div className="mt-3">
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-[#8a8f98]">
         Resumen de lo que se hará (orden por riesgo: menor → mayor). Nada se toca
         hasta que confirmes.
       </p>
@@ -428,21 +430,21 @@ function ResumenConsolidado({ orden, analisis, prMode, setPrMode, onConfirmar })
           return (
             <div
               key={clave}
-              className="rounded-lg bg-[#101722]/78 p-3 text-sm ring-1 ring-white/10"
+              className="rounded-lg bg-[#121316] p-3 text-sm ring-1 ring-white/[0.08]"
             >
               <span className={'rounded-full px-2 py-0.5 text-xs font-semibold ' + meta.chip}>
                 {meta.label}
               </span>
-              <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-slate-400">
+              <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-[#8a8f98]">
                 <span>
                   Archivo:{' '}
-                  <code className="text-slate-300">
+                  <code className="text-[#c4c7cc]">
                     {getArchivoSugerido(clave, datos)}
                   </code>
                 </span>
                 <span>
                   Rama:{' '}
-                  <code className="text-slate-300">
+                  <code className="text-[#c4c7cc]">
                     {prMode === 'unico'
                       ? 'agente/mejoras-…'
                       : getNombreRama(clave, datos)}
@@ -456,7 +458,7 @@ function ResumenConsolidado({ orden, analisis, prMode, setPrMode, onConfirmar })
 
       {/* PR único vs separados */}
       <fieldset className="mt-4">
-        <legend className="text-xs font-medium text-slate-400">
+        <legend className="text-xs font-medium text-[#8a8f98]">
           Estrategia de PR
         </legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -483,7 +485,7 @@ function ResumenConsolidado({ orden, analisis, prMode, setPrMode, onConfirmar })
         >
           Confirmar y ejecutar
         </button>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-[#62666d]">
           Podrás aprobar/saltar/cancelar cada categoría.
         </span>
       </div>
@@ -499,12 +501,12 @@ function OpcionPR({ activo, onClick, titulo, desc }) {
       className={
         'rounded-lg p-3 text-left text-sm ring-1 transition ' +
         (activo
-          ? 'bg-[#111a27] ring-[#007ACC]/55'
-          : 'bg-[#101722]/70 ring-white/10 hover:ring-[#007ACC]/35')
+          ? 'bg-[#17181b] ring-[#007ACC]/55'
+          : 'bg-[#121316] ring-white/[0.08] hover:ring-[#007ACC]/35')
       }
     >
-      <span className="font-semibold text-slate-100">{titulo}</span>
-      <p className="mt-0.5 text-xs text-slate-400">{desc}</p>
+      <span className="font-semibold text-[#f7f8f8]">{titulo}</span>
+      <p className="mt-0.5 text-xs text-[#8a8f98]">{desc}</p>
     </button>
   )
 }
@@ -529,7 +531,7 @@ function CategoriaEjecucion({
     <li
       className={
         'rounded-lg p-3 ring-1 ' +
-        (activa ? 'bg-[#111a27] ring-[#007ACC]/45' : 'bg-[#101722]/60 ring-white/10')
+        (activa ? 'bg-[#17181b] ring-[#007ACC]/45' : 'bg-[#121316] ring-white/[0.08]')
       }
     >
       <div className="flex items-center justify-between gap-2">
@@ -540,9 +542,9 @@ function CategoriaEjecucion({
       </div>
 
       {item.archivo && (
-        <p className="mt-1 text-xs text-slate-500">
-          <code className="text-slate-300">{item.archivo}</code> · rama{' '}
-          <code className="text-slate-300">{item.rama}</code>
+        <p className="mt-1 text-xs text-[#62666d]">
+          <code className="text-[#c4c7cc]">{item.archivo}</code> · rama{' '}
+          <code className="text-[#c4c7cc]">{item.rama}</code>
         </p>
       )}
 
@@ -576,23 +578,26 @@ function CategoriaEjecucion({
                 <button
                   type="button"
                   onClick={onAprobar}
-                  className="rounded-md bg-[#007ACC] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0b8fe8]"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-[#007ACC] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0b8fe8]"
                 >
-                  ✅ Aprobar y continuar
+                  <IconCheck className="h-3.5 w-3.5" />
+                  Aprobar y continuar
                 </button>
                 <button
                   type="button"
                   onClick={onActivarEdicion}
-                  className="rounded-md bg-[#007ACC]/18 px-3 py-1.5 text-xs font-medium text-[#d7efff] ring-1 ring-[#007ACC]/45 hover:bg-[#007ACC]/26"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-[#007ACC]/18 px-3 py-1.5 text-xs font-medium text-[#d7efff] ring-1 ring-[#007ACC]/45 hover:bg-[#007ACC]/26"
                 >
-                  ✏️ Aprobar con edición
+                  <IconPencil className="h-3.5 w-3.5" />
+                  Aprobar con edición
                 </button>
                 <button
                   type="button"
                   onClick={onSaltar}
-                  className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-white/[0.07]"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-[#e1e3e6] hover:bg-white/[0.07]"
                 >
-                  ⏭️ Saltar esta categoría
+                  <IconSkip className="h-3.5 w-3.5" />
+                  Saltar esta categoría
                 </button>
               </>
             ) : (
@@ -609,7 +614,7 @@ function CategoriaEjecucion({
       )}
 
       {(estado === 'preparando' || estado === 'commiteando') && (
-        <p className="mt-2 flex items-center gap-2 text-xs text-slate-400">
+        <p className="mt-2 flex items-center gap-2 text-xs text-[#8a8f98]">
           <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-700 border-t-[#007ACC]" />
           {estado === 'preparando' ? 'Preparando diff…' : 'Haciendo commit…'}
         </p>
@@ -620,13 +625,13 @@ function CategoriaEjecucion({
 
 function EstadoBadge({ estado, prUrl }) {
   const map = {
-    pendiente: ['Pendiente', 'bg-white/10 text-slate-300'],
-    preparando: ['Preparando…', 'bg-white/10 text-slate-300'],
+    pendiente: ['Pendiente', 'bg-white/10 text-[#c4c7cc]'],
+    preparando: ['Preparando…', 'bg-white/10 text-[#c4c7cc]'],
     diff: ['Revisar diff', 'bg-amber-500/15 text-amber-300'],
-    commiteando: ['Commit…', 'bg-white/10 text-slate-300'],
+    commiteando: ['Commit…', 'bg-white/10 text-[#c4c7cc]'],
     commiteado: ['Commit hecho', 'bg-emerald-500/15 text-emerald-300'],
     'pr-abierto': ['PR abierto', 'bg-emerald-500/15 text-emerald-300'],
-    saltado: ['Saltado', 'bg-white/10 text-slate-300'],
+    saltado: ['Saltado', 'bg-white/10 text-[#c4c7cc]'],
     error: ['Error', 'bg-red-500/15 text-red-300'],
   }
   const [txt, cls] = map[estado] || map.pendiente
@@ -664,7 +669,7 @@ function RollbackPanel({ prs, seleccion, onToggle, onCerrar, onDejar }) {
               href={pr.url}
               target="_blank"
               rel="noreferrer"
-              className="text-slate-300 hover:underline"
+              className="text-[#c4c7cc] hover:underline"
             >
               PR #{pr.numero} ({pr.clave})
             </a>
@@ -682,7 +687,7 @@ function RollbackPanel({ prs, seleccion, onToggle, onCerrar, onDejar }) {
         <button
           type="button"
           onClick={onDejar}
-          className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-white/[0.07]"
+          className="rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-[#e1e3e6] hover:bg-white/[0.07]"
         >
           No cerrar ninguno
         </button>
@@ -694,7 +699,7 @@ function RollbackPanel({ prs, seleccion, onToggle, onCerrar, onDejar }) {
 function ResultadoFinal({ prs, items, orden }) {
   const saltados = orden.filter((c) => items[c]?.estado === 'saltado')
   return (
-    <div className="mt-4 rounded-lg border border-white/10 bg-[#080b12] p-4">
+    <div className="mt-4 rounded-lg border border-white/[0.08] bg-[#0a0b0d] p-4">
       <p className="text-sm font-semibold text-[#7cc7ff]">Ejecución completada</p>
       {prs.length > 0 ? (
         <ul className="mt-2 space-y-1 text-sm">
@@ -712,10 +717,10 @@ function ResultadoFinal({ prs, items, orden }) {
           ))}
         </ul>
       ) : (
-        <p className="mt-1 text-sm text-slate-400">No se abrió ningún PR.</p>
+        <p className="mt-1 text-sm text-[#8a8f98]">No se abrió ningún PR.</p>
       )}
       {saltados.length > 0 && (
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-[#62666d]">
           Categorías saltadas: {saltados.map((c) => META_POR_CLAVE[c].label).join(', ')}
         </p>
       )}

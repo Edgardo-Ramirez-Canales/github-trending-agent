@@ -52,9 +52,9 @@ export default function AIProviderSelector({ onChange }) {
   const activoTieneClave = provider === 'openai' ? tieneOpenai : tieneGemini
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#0d111a]/78 p-4 shadow-xl shadow-black/10">
+    <div className="rounded-lg border border-white/[0.08] bg-[#0e0f11] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_1px_2px_0_rgba(0,0,0,0.3)]">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-slate-200">Proveedor de IA</h3>
+        <h3 className="text-sm font-semibold text-[#e1e3e6]">Proveedor de IA</h3>
         <span
           className={
             'rounded-full px-2.5 py-0.5 text-xs font-medium ' +
@@ -68,7 +68,7 @@ export default function AIProviderSelector({ onChange }) {
       </div>
 
       {/* Toggle de proveedor */}
-      <div className="mt-3 grid grid-cols-2 gap-1 rounded-md border border-white/10 bg-[#080b12] p-1">
+      <div className="mt-3 grid grid-cols-2 gap-1 rounded-md border border-white/[0.08] bg-[#0a0b0d] p-1">
         <ProviderToggle
           activo={provider === 'openai'}
           disponible={tieneOpenai}
@@ -105,7 +105,7 @@ export default function AIProviderSelector({ onChange }) {
         />
       </div>
 
-      <p className="mt-3 text-xs text-slate-500">
+      <p className="mt-3 text-xs text-[#62666d]">
         Llena la(s) que tengas. Ambas se guardan en localStorage; el análisis usa
         el proveedor activo. Puedes cambiar en cualquier momento.
       </p>
@@ -122,7 +122,7 @@ function ProviderToggle({ activo, disponible, onClick, label }) {
         'relative rounded px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC] ' +
         (activo
           ? 'bg-[#007ACC]/18 text-[#d7efff] ring-1 ring-[#007ACC]/45'
-          : 'text-slate-400 hover:text-slate-200')
+          : 'text-[#8a8f98] hover:text-[#e1e3e6]')
       }
     >
       {label}
@@ -140,7 +140,7 @@ function ProviderToggle({ activo, disponible, onClick, label }) {
 function KeyField({ id, label, value, visible, onToggle, onChange, placeholder }) {
   return (
     <div>
-      <label htmlFor={id} className="text-xs font-medium text-slate-400">
+      <label htmlFor={id} className="text-xs font-medium text-[#8a8f98]">
         {label}
       </label>
       <div className="mt-1 flex items-stretch gap-2">
@@ -152,12 +152,12 @@ function KeyField({ id, label, value, visible, onToggle, onChange, placeholder }
           placeholder={placeholder}
           autoComplete="off"
           spellCheck={false}
-          className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
+          className="min-w-0 flex-1 rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] placeholder:text-[#4a4d54] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
         />
         <button
           type="button"
           onClick={onToggle}
-          className="rounded-md border border-white/10 bg-white/[0.04] px-3 text-xs font-medium text-slate-200 transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
+          className="rounded-md border border-white/[0.08] bg-white/[0.04] px-3 text-xs font-medium text-[#e1e3e6] transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
           aria-label={visible ? `Ocultar ${label}` : `Mostrar ${label}`}
         >
           {visible ? 'Ocultar' : 'Mostrar'}

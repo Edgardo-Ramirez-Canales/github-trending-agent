@@ -31,9 +31,9 @@ export default function TokenInput({ onChange }) {
   const tieneToken = Boolean(token)
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#0d111a]/78 p-4 shadow-xl shadow-black/10">
+    <div className="rounded-lg border border-white/[0.08] bg-[#0e0f11] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_1px_2px_0_rgba(0,0,0,0.3)]">
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor="gh-token" className="text-sm font-semibold text-slate-200">
+        <label htmlFor="gh-token" className="text-sm font-semibold text-[#e1e3e6]">
           GitHub Token
         </label>
         {tieneToken ? (
@@ -63,12 +63,12 @@ export default function TokenInput({ onChange }) {
           placeholder="ghp_… (override manual opcional)"
           autoComplete="off"
           spellCheck={false}
-          className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
+          className="min-w-0 flex-1 rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] placeholder:text-[#4a4d54] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="rounded-md border border-white/10 bg-white/[0.04] px-3 text-xs font-medium text-slate-200 transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
+          className="rounded-md border border-white/[0.08] bg-white/[0.04] px-3 text-xs font-medium text-[#e1e3e6] transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
           aria-label={visible ? 'Ocultar token' : 'Mostrar token'}
         >
           {visible ? 'Ocultar' : 'Mostrar'}
@@ -84,7 +84,7 @@ export default function TokenInput({ onChange }) {
         )}
       </div>
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-[#62666d]">
         Se guarda solo en este navegador (localStorage). Nunca se envía a Supabase
         ni al servidor.
       </p>

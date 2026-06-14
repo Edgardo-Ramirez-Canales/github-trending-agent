@@ -15,9 +15,9 @@ export default function AnalysisPanel({
   return (
     <div className="space-y-4">
       {/* Score de oportunidad (solo lectura) */}
-      <div className="rounded-lg border border-white/10 bg-[#101722]/80 p-4">
+      <div className="rounded-lg border border-white/[0.08] bg-[#121316] p-4">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold text-slate-200">
+          <h3 className="text-sm font-semibold text-[#e1e3e6]">
             Score de oportunidad
           </h3>
           <span className="rounded-full bg-[#007ACC]/15 px-2.5 py-0.5 text-xs font-semibold text-[#7cc7ff] ring-1 ring-[#007ACC]/30">
@@ -25,13 +25,13 @@ export default function AnalysisPanel({
           </span>
         </div>
         {score.justificacion && (
-          <p className="mt-2 text-sm text-slate-400">{score.justificacion}</p>
+          <p className="mt-2 text-sm text-[#8a8f98]">{score.justificacion}</p>
         )}
         {score.categoria_recomendada && (
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-[#8a8f98]">
               Recomendado primero:{' '}
-              <strong className="text-slate-200">
+              <strong className="text-[#e1e3e6]">
                 {etiqueta(score.categoria_recomendada)}
               </strong>
             </span>
@@ -45,7 +45,7 @@ export default function AnalysisPanel({
           </div>
         )}
         {Array.isArray(score.orden_sugerido) && score.orden_sugerido.length > 0 && (
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-[#62666d]">
             Orden sugerido: {score.orden_sugerido.map(etiqueta).join(' → ')}
           </p>
         )}
