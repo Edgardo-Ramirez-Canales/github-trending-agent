@@ -7,7 +7,7 @@ export default function CategorySelector({ analisis, seleccionadas, onToggle }) 
   if (!analisis) return null
   return (
     <div className="space-y-3">
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-[#62666d]">
         Marca de 1 a 4 categorías para actuar sobre ellas.
       </p>
       {CATEGORIAS_ACCION.map((cat) => (
@@ -30,8 +30,8 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle }) {
   return (
     <div
       className={
-        'rounded-lg bg-[#101722]/78 p-4 ring-1 transition ' +
-        (seleccionada ? cat.anillo : 'ring-slate-700')
+        'rounded-lg bg-[#121316] p-4 ring-1 transition ' +
+        (seleccionada ? cat.anillo : 'ring-white/[0.08]')
       }
     >
       <div className="flex items-start gap-3">
@@ -39,7 +39,7 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle }) {
           type="checkbox"
           checked={seleccionada}
           onChange={onToggle}
-          className="mt-1 h-4 w-4 shrink-0 accent-[#007ACC]"
+          className="mt-1 shrink-0 ctrl-check"
           aria-label={`Seleccionar ${cat.label}`}
         />
         <div className="min-w-0 flex-1">
@@ -52,12 +52,12 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle }) {
             <ScoreBar score={score} barra={cat.barra} />
           </div>
           {datos.resumen && (
-            <p className="mt-2 text-sm text-slate-400">{datos.resumen}</p>
+            <p className="mt-2 text-sm text-[#8a8f98]">{datos.resumen}</p>
           )}
           <button
             type="button"
             onClick={() => setAbierta((v) => !v)}
-            className="mt-2 text-xs text-slate-400 underline-offset-2 hover:text-slate-200 hover:underline"
+            className="mt-2 text-xs text-[#8a8f98] underline-offset-2 hover:text-[#e1e3e6] hover:underline"
           >
             {abierta ? 'Ocultar detalle' : 'Ver detalle'}
           </button>
@@ -71,16 +71,16 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle }) {
 function Detalle({ cat, datos }) {
   const archivo = getArchivoSugerido(cat.clave, datos)
   return (
-    <div className="mt-3 space-y-2 border-t border-white/10 pt-3 text-sm">
-      <p className="text-xs text-slate-500">
-        Archivo objetivo: <code className="text-slate-300">{archivo}</code>
+    <div className="mt-3 space-y-2 border-t border-white/[0.08] pt-3 text-sm">
+      <p className="text-xs text-[#62666d]">
+        Archivo objetivo: <code className="text-[#c4c7cc]">{archivo}</code>
       </p>
 
       {cat.clave === 'features_faltantes' && (
         <>
           {datos.feature_principal && (
-            <p className="text-slate-300">
-              <span className="text-slate-500">Feature:</span>{' '}
+            <p className="text-[#c4c7cc]">
+              <span className="text-[#62666d]">Feature:</span>{' '}
               {datos.feature_principal}
             </p>
           )}
@@ -92,8 +92,8 @@ function Detalle({ cat, datos }) {
         <>
           {Array.isArray(datos.secciones_faltantes) &&
             datos.secciones_faltantes.length > 0 && (
-              <p className="text-slate-300">
-                <span className="text-slate-500">Faltan:</span>{' '}
+              <p className="text-[#c4c7cc]">
+                <span className="text-[#62666d]">Faltan:</span>{' '}
                 {datos.secciones_faltantes.join(', ')}
               </p>
             )}
@@ -104,14 +104,14 @@ function Detalle({ cat, datos }) {
       {cat.clave === 'gap_mercado' && (
         <>
           {Array.isArray(datos.competidores) && datos.competidores.length > 0 && (
-            <p className="text-slate-300">
-              <span className="text-slate-500">Competidores:</span>{' '}
+            <p className="text-[#c4c7cc]">
+              <span className="text-[#62666d]">Competidores:</span>{' '}
               {datos.competidores.join(', ')}
             </p>
           )}
           {datos.angulo_unico && (
-            <p className="text-slate-300">
-              <span className="text-slate-500">Ángulo único:</span>{' '}
+            <p className="text-[#c4c7cc]">
+              <span className="text-[#62666d]">Ángulo único:</span>{' '}
               {datos.angulo_unico}
             </p>
           )}
@@ -122,13 +122,13 @@ function Detalle({ cat, datos }) {
       {cat.clave === 'codigo_solid' && (
         <>
           {datos.principio_violado && (
-            <p className="text-slate-300">
-              <span className="text-slate-500">Principio violado:</span>{' '}
+            <p className="text-[#c4c7cc]">
+              <span className="text-[#62666d]">Principio violado:</span>{' '}
               {datos.principio_violado}
             </p>
           )}
           {datos.explicacion_cambios && (
-            <p className="text-slate-400">{datos.explicacion_cambios}</p>
+            <p className="text-[#8a8f98]">{datos.explicacion_cambios}</p>
           )}
           <CodeBlock texto={datos.codigo_refactorizado} />
         </>
@@ -140,7 +140,7 @@ function Detalle({ cat, datos }) {
 function CodeBlock({ texto }) {
   if (!texto) return null
   return (
-    <pre className="max-h-64 overflow-auto rounded-md bg-[#080b12] p-3 text-xs text-slate-300 ring-1 ring-white/10">
+    <pre className="max-h-64 overflow-auto rounded-md bg-[#0a0b0d] p-3 text-xs text-[#c4c7cc] ring-1 ring-white/[0.08]">
       <code>{texto}</code>
     </pre>
   )
@@ -153,7 +153,7 @@ function ScoreBar({ score, barra }) {
       <div className="h-2 w-24 overflow-hidden rounded-full bg-white/10">
         <div className={'h-full rounded-full ' + barra} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-medium text-slate-300">{score}/10</span>
+      <span className="text-xs font-medium text-[#c4c7cc]">{score}/10</span>
     </div>
   )
 }

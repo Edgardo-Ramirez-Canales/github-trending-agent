@@ -34,7 +34,7 @@ export default function RepoDetail({ repo, onClose }) {
   if (!repo) return null
 
   return (
-    <div className="mt-6 rounded-lg border border-white/10 bg-[#0d111a]/86 p-5 shadow-2xl shadow-black/25">
+    <div className="mt-6 rounded-lg border border-white/[0.08] bg-[#0e0f11] p-5 shadow-2xl shadow-black/25">
       {/* Cabecera */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -42,14 +42,14 @@ export default function RepoDetail({ repo, onClose }) {
             href={repo.url}
             target="_blank"
             rel="noreferrer"
-            className="truncate text-lg font-semibold text-slate-50 hover:text-white hover:underline"
+            className="truncate text-lg font-semibold text-[#f7f8f8] hover:text-white hover:underline"
           >
             {repo.nombre}
           </a>
           {repo.descripcion && (
-            <p className="mt-1 text-sm leading-6 text-slate-400">{repo.descripcion}</p>
+            <p className="mt-1 text-sm leading-6 text-[#8a8f98]">{repo.descripcion}</p>
           )}
-          <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-slate-500">
+          <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-[#62666d]">
             <span>★ {repo.estrellas.toLocaleString('es')}</span>
             <span className="text-[#7cc7ff]">↑ {repo.velocidad}/día</span>
             {repo.lenguaje !== 'N/D' && <span>{repo.lenguaje}</span>}
@@ -58,16 +58,16 @@ export default function RepoDetail({ repo, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="shrink-0 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1 text-sm text-slate-400 transition hover:bg-white/[0.06] hover:text-slate-200"
+          className="shrink-0 rounded-md border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-sm text-[#8a8f98] transition hover:bg-white/[0.06] hover:text-[#e1e3e6]"
         >
           Cerrar
         </button>
       </div>
 
-      <div className="mt-4 border-t border-white/10 pt-4">
+      <div className="mt-4 border-t border-white/[0.08] pt-4">
         {/* Estado: analizando */}
         {cargando && (
-          <div className="flex items-center gap-3 py-6 text-slate-300">
+          <div className="flex items-center gap-3 py-6 text-[#c4c7cc]">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-700 border-t-[#007ACC]" />
             Analizando con {proveedor || 'IA'}…
           </div>
@@ -91,9 +91,9 @@ export default function RepoDetail({ repo, onClose }) {
         {analisis && !cargando && (
           <>
             {proveedor && (
-              <p className="mb-3 text-xs text-slate-500">
+              <p className="mb-3 text-xs text-[#62666d]">
                 Análisis generado con{' '}
-                <span className="text-slate-300">{proveedor}</span>
+                <span className="text-[#c4c7cc]">{proveedor}</span>
               </p>
             )}
             <AnalysisPanel
@@ -105,11 +105,11 @@ export default function RepoDetail({ repo, onClose }) {
 
             {/* Selección de modo + ejecución */}
             {seleccionadas.length === 0 ? (
-              <div className="mt-5 rounded-lg border border-dashed border-white/15 bg-white/[0.02] p-4 text-center text-sm text-slate-500">
+              <div className="mt-5 rounded-lg border border-dashed border-white/[0.1] bg-white/[0.02] p-4 text-center text-sm text-[#62666d]">
                 Selecciona al menos una categoría para elegir un modo de acción.
               </div>
             ) : (
-              <div className="mt-6 border-t border-white/10 pt-5">
+              <div className="mt-6 border-t border-white/[0.08] pt-5">
                 <ModeSelector modo={modo} onChange={setModo} />
                 <ModeRunner
                   repo={repo}

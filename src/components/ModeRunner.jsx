@@ -3,6 +3,7 @@ import { META_POR_CLAVE, getContenidoGenerado } from '../utils/categorias.js'
 import { crearIssue } from '../services/github.js'
 import { registrarContribucion } from '../services/supabase.js'
 import ExecutionQueue from './ExecutionQueue.jsx'
+import { IconCheck } from './icons.jsx'
 
 // Ejecuta el modo elegido sobre las categorías seleccionadas.
 //   A → borrador de texto copiable (no toca GitHub)
@@ -28,7 +29,7 @@ export default function ModeRunner({ repo, analisis, seleccionadas, modo }) {
 function ModoA({ analisis, seleccionadas }) {
   return (
     <div className="mt-5 space-y-3">
-      <h4 className="text-sm font-semibold text-slate-200">
+      <h4 className="text-sm font-semibold text-[#e1e3e6]">
         Modo A — Borradores generados
       </h4>
       {seleccionadas.map((clave) => {
@@ -39,7 +40,7 @@ function ModoA({ analisis, seleccionadas }) {
         return (
           <div
             key={clave}
-            className="rounded-lg border border-white/10 bg-[#101722]/78 p-4"
+            className="rounded-lg border border-white/[0.08] bg-[#121316] p-4"
           >
             <div className="flex items-center justify-between gap-2">
               <span
@@ -50,10 +51,10 @@ function ModoA({ analisis, seleccionadas }) {
               <CopiarBtn texto={texto} />
             </div>
             {datos.resumen && (
-              <p className="mt-2 text-sm text-slate-400">{datos.resumen}</p>
+              <p className="mt-2 text-sm text-[#8a8f98]">{datos.resumen}</p>
             )}
             {contenido && (
-              <pre className="mt-2 max-h-72 overflow-auto rounded-md bg-[#080b12] p-3 text-xs text-slate-300 ring-1 ring-white/10">
+              <pre className="mt-2 max-h-72 overflow-auto rounded-md bg-[#0a0b0d] p-3 text-xs text-[#c4c7cc] ring-1 ring-white/[0.08]">
                 <code>{contenido}</code>
               </pre>
             )}
@@ -116,11 +117,11 @@ function ModoB({ repo, analisis, seleccionadas }) {
 
   return (
     <div className="mt-5 space-y-3">
-      <h4 className="text-sm font-semibold text-slate-200">
+      <h4 className="text-sm font-semibold text-[#e1e3e6]">
         Modo B — Issues a publicar
       </h4>
-      <p className="text-xs text-slate-500">
-        Cada issue se abre en <code className="text-slate-400">{repo.nombre}</code>{' '}
+      <p className="text-xs text-[#62666d]">
+        Cada issue se abre en <code className="text-[#8a8f98]">{repo.nombre}</code>{' '}
         solo cuando tú lo apruebas.
       </p>
       {seleccionadas.map((clave) => {
@@ -149,7 +150,7 @@ function IssuePreview({ meta, titulo, cuerpo, estado, onAbrir }) {
   const abriendo = estado.estado === 'abriendo'
 
   return (
-    <div className="rounded-lg border border-white/10 bg-[#101722]/78 p-4">
+    <div className="rounded-lg border border-white/[0.08] bg-[#121316] p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span
           className={'rounded-full px-2.5 py-0.5 text-xs font-semibold ' + meta.chip}
@@ -161,9 +162,10 @@ function IssuePreview({ meta, titulo, cuerpo, estado, onAbrir }) {
             href={estado.url}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md bg-emerald-500/18 px-3 py-1 text-xs font-medium text-emerald-200 ring-1 ring-emerald-500/35 hover:bg-emerald-500/28"
+            className="inline-flex items-center gap-1 rounded-md bg-emerald-500/18 px-3 py-1 text-xs font-medium text-emerald-200 ring-1 ring-emerald-500/35 hover:bg-emerald-500/28"
           >
-            ✓ Issue abierto — ver
+            <IconCheck className="h-3.5 w-3.5" />
+            Issue abierto — ver
           </a>
         ) : (
           <button
@@ -177,16 +179,16 @@ function IssuePreview({ meta, titulo, cuerpo, estado, onAbrir }) {
         )}
       </div>
 
-      <p className="mt-2 text-sm font-medium text-slate-200">{titulo}</p>
+      <p className="mt-2 text-sm font-medium text-[#e1e3e6]">{titulo}</p>
       <button
         type="button"
         onClick={() => setVerCuerpo((v) => !v)}
-        className="mt-1 text-xs text-slate-400 hover:text-slate-200 hover:underline"
+        className="mt-1 text-xs text-[#8a8f98] hover:text-[#e1e3e6] hover:underline"
       >
         {verCuerpo ? 'Ocultar cuerpo' : 'Ver cuerpo del issue'}
       </button>
       {verCuerpo && (
-        <pre className="mt-2 max-h-60 overflow-auto rounded-md bg-[#080b12] p-3 text-xs text-slate-300 ring-1 ring-white/10 whitespace-pre-wrap">
+        <pre className="mt-2 max-h-60 overflow-auto rounded-md bg-[#0a0b0d] p-3 text-xs text-[#c4c7cc] ring-1 ring-white/[0.08] whitespace-pre-wrap">
           {cuerpo}
         </pre>
       )}
@@ -241,9 +243,16 @@ function CopiarBtn({ texto }) {
     <button
       type="button"
       onClick={copiar}
-      className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-200 hover:bg-white/[0.07]"
+      className="inline-flex items-center gap-1 rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs font-medium text-[#e1e3e6] hover:bg-white/[0.07]"
     >
-      {copiado ? '✓ Copiado' : 'Copiar'}
+      {copiado ? (
+        <>
+          <IconCheck className="h-3.5 w-3.5" />
+          Copiado
+        </>
+      ) : (
+        'Copiar'
+      )}
     </button>
   )
 }
