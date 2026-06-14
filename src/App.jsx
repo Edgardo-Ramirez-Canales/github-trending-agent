@@ -17,7 +17,9 @@ export default function App() {
   if (cargando) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
-        <p className="text-slate-400">Cargando sesión…</p>
+        <p className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-slate-400 shadow-2xl shadow-black/30">
+          Cargando sesión…
+        </p>
       </div>
     )
   }
@@ -40,9 +42,14 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <h1 className="text-lg font-bold text-slate-100">GitHub Trending Agent</h1>
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#080b12]/86 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
+          <h1 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-100">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#007ACC] shadow-[0_0_18px_rgba(0,122,204,0.8)]" />
+            <span className="text-[#7cc7ff]">EDR Labs</span>
+            <span className="text-slate-600">/</span>
+            <span>GitHub Trending Agent</span>
+          </h1>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-slate-400 sm:inline">
               {usuario.user_metadata?.user_name || usuario.email}
@@ -66,7 +73,7 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
             <button
               type="button"
               onClick={onCerrarSesion}
-              className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-200 ring-1 ring-slate-700 hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-slate-200 shadow-sm transition hover:border-white/15 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
             >
               Cerrar sesión
             </button>
@@ -74,7 +81,7 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-7xl px-5 py-6">
         <section className="grid gap-4 md:grid-cols-2">
           <TokenInput />
           <AIProviderSelector />
@@ -150,10 +157,10 @@ function TrendingSection() {
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-slate-200">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">
           Repos trending
           {!cargando && (
-            <span className="ml-2 text-sm font-normal text-slate-500">
+            <span className="ml-2 rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 text-xs font-medium normal-case tracking-normal text-slate-300">
               {visibles.length} mostrados
             </span>
           )}
@@ -161,14 +168,14 @@ function TrendingSection() {
         <button
           type="button"
           onClick={recargar}
-          className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-slate-200 ring-1 ring-slate-700 hover:bg-slate-700"
+          className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-slate-200 transition hover:border-[#007ACC]/50 hover:bg-[#007ACC]/10"
         >
           Recargar
         </button>
       </div>
 
       {/* Filtros */}
-      <div className="mt-4 grid gap-4 rounded-xl bg-slate-800/40 p-4 ring-1 ring-slate-700 md:grid-cols-2">
+      <div className="mt-4 grid gap-4 rounded-lg border border-white/10 bg-[#0d111a]/78 p-4 shadow-2xl shadow-black/20 md:grid-cols-2">
         <div>
           <label className="text-xs font-medium text-slate-400">
             Estrellas mínimas: {minEstrellas.toLocaleString('es')}
@@ -180,7 +187,7 @@ function TrendingSection() {
             step="100"
             value={minEstrellas}
             onChange={(e) => setMinEstrellas(Number(e.target.value))}
-            className="mt-2 w-full accent-emerald-500"
+            className="mt-2 w-full accent-[#007ACC]"
           />
         </div>
 
@@ -194,7 +201,7 @@ function TrendingSection() {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="ej: cli, ai, rust…"
-            className="mt-1 w-full rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700 placeholder:text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            className="mt-1 w-full rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
           />
         </div>
 
@@ -210,10 +217,10 @@ function TrendingSection() {
                 type="button"
                 onClick={() => toggleLenguaje(l)}
                 className={
-                  'rounded-full px-2.5 py-1 text-xs font-medium transition ' +
+                  'rounded-md px-2.5 py-1 text-xs font-medium transition ' +
                   (lenguajes.includes(l)
-                    ? 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-500/40'
-                    : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700')
+                    ? 'bg-[#007ACC]/18 text-sky-100 ring-1 ring-[#007ACC]/50'
+                    : 'bg-white/[0.04] text-slate-300 ring-1 ring-white/10 hover:bg-white/[0.07]')
                 }
               >
                 {l}
@@ -230,7 +237,7 @@ function TrendingSection() {
             id="orden"
             value={orden}
             onChange={(e) => setOrden(e.target.value)}
-            className="mt-1 w-full rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            className="mt-1 w-full rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
           >
             <option value="velocidad">Velocidad de crecimiento</option>
             <option value="estrellas">Total de estrellas</option>
@@ -244,7 +251,7 @@ function TrendingSection() {
         <p className="mt-6 text-center text-slate-400">Buscando repos…</p>
       )}
       {error && (
-        <div className="mt-6 rounded-xl bg-red-500/10 p-4 text-center text-sm text-red-300 ring-1 ring-red-500/30">
+        <div className="mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-300">
           {error}
         </div>
       )}

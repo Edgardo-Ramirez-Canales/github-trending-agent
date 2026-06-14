@@ -15,12 +15,12 @@ export default function AnalysisPanel({
   return (
     <div className="space-y-4">
       {/* Score de oportunidad (solo lectura) */}
-      <div className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700">
+      <div className="rounded-lg border border-white/10 bg-[#101722]/80 p-4">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-slate-200">
             Score de oportunidad
           </h3>
-          <span className="rounded-full bg-indigo-500/15 px-2.5 py-0.5 text-xs font-semibold text-indigo-300">
+          <span className="rounded-full bg-[#007ACC]/15 px-2.5 py-0.5 text-xs font-semibold text-[#7cc7ff] ring-1 ring-[#007ACC]/30">
             Global {score.puntaje_global ?? '—'}/10
           </span>
         </div>
@@ -38,7 +38,7 @@ export default function AnalysisPanel({
             <button
               type="button"
               onClick={() => onAtacar?.(score.categoria_recomendada)}
-              className="rounded-lg bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-200 ring-1 ring-indigo-500/40 hover:bg-indigo-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+              className="rounded-md bg-[#007ACC]/18 px-3 py-1 text-xs font-medium text-[#d7efff] ring-1 ring-[#007ACC]/45 hover:bg-[#007ACC]/26 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
             >
               Atacar esta oportunidad
             </button>

@@ -52,15 +52,15 @@ export default function AIProviderSelector({ onChange }) {
   const activoTieneClave = provider === 'openai' ? tieneOpenai : tieneGemini
 
   return (
-    <div className="rounded-xl bg-slate-800/60 ring-1 ring-slate-700 p-4">
+    <div className="rounded-lg border border-white/10 bg-[#0d111a]/78 p-4 shadow-xl shadow-black/10">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-200">Proveedor de IA</h3>
         <span
           className={
             'rounded-full px-2.5 py-0.5 text-xs font-medium ' +
             (activoTieneClave
-              ? 'bg-violet-500/15 text-violet-300'
-              : 'bg-amber-500/15 text-amber-300')
+              ? 'bg-[#007ACC]/15 text-[#7cc7ff] ring-1 ring-[#007ACC]/30'
+              : 'bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/25')
           }
         >
           {activoTieneClave ? `Usando: ${nombreActivo}` : 'Sin clave configurada'}
@@ -68,7 +68,7 @@ export default function AIProviderSelector({ onChange }) {
       </div>
 
       {/* Toggle de proveedor */}
-      <div className="mt-3 grid grid-cols-2 gap-1 rounded-lg bg-slate-900 p-1 ring-1 ring-slate-700">
+      <div className="mt-3 grid grid-cols-2 gap-1 rounded-md border border-white/10 bg-[#080b12] p-1">
         <ProviderToggle
           activo={provider === 'openai'}
           disponible={tieneOpenai}
@@ -119,9 +119,9 @@ function ProviderToggle({ activo, disponible, onClick, label }) {
       type="button"
       onClick={onClick}
       className={
-        'relative rounded-md px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 ' +
+        'relative rounded px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC] ' +
         (activo
-          ? 'bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/40'
+          ? 'bg-[#007ACC]/18 text-[#d7efff] ring-1 ring-[#007ACC]/45'
           : 'text-slate-400 hover:text-slate-200')
       }
     >
@@ -152,12 +152,12 @@ function KeyField({ id, label, value, visible, onToggle, onChange, placeholder }
           placeholder={placeholder}
           autoComplete="off"
           spellCheck={false}
-          className="min-w-0 flex-1 rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700 placeholder:text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+          className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
         />
         <button
           type="button"
           onClick={onToggle}
-          className="rounded-lg bg-slate-700 px-3 text-xs font-medium text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+          className="rounded-md border border-white/10 bg-white/[0.04] px-3 text-xs font-medium text-slate-200 transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
           aria-label={visible ? `Ocultar ${label}` : `Mostrar ${label}`}
         >
           {visible ? 'Ocultar' : 'Mostrar'}

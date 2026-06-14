@@ -39,7 +39,7 @@ function ModoA({ analisis, seleccionadas }) {
         return (
           <div
             key={clave}
-            className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700"
+            className="rounded-lg border border-white/10 bg-[#101722]/78 p-4"
           >
             <div className="flex items-center justify-between gap-2">
               <span
@@ -53,7 +53,7 @@ function ModoA({ analisis, seleccionadas }) {
               <p className="mt-2 text-sm text-slate-400">{datos.resumen}</p>
             )}
             {contenido && (
-              <pre className="mt-2 max-h-72 overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-300 ring-1 ring-slate-800">
+              <pre className="mt-2 max-h-72 overflow-auto rounded-md bg-[#080b12] p-3 text-xs text-slate-300 ring-1 ring-white/10">
                 <code>{contenido}</code>
               </pre>
             )}
@@ -149,7 +149,7 @@ function IssuePreview({ meta, titulo, cuerpo, estado, onAbrir }) {
   const abriendo = estado.estado === 'abriendo'
 
   return (
-    <div className="rounded-xl bg-slate-800/60 p-4 ring-1 ring-slate-700">
+    <div className="rounded-lg border border-white/10 bg-[#101722]/78 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span
           className={'rounded-full px-2.5 py-0.5 text-xs font-semibold ' + meta.chip}
@@ -161,7 +161,7 @@ function IssuePreview({ meta, titulo, cuerpo, estado, onAbrir }) {
             href={estado.url}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-200 ring-1 ring-emerald-500/40 hover:bg-emerald-500/30"
+            className="rounded-md bg-emerald-500/18 px-3 py-1 text-xs font-medium text-emerald-200 ring-1 ring-emerald-500/35 hover:bg-emerald-500/28"
           >
             ✓ Issue abierto — ver
           </a>
@@ -170,7 +170,7 @@ function IssuePreview({ meta, titulo, cuerpo, estado, onAbrir }) {
             type="button"
             onClick={onAbrir}
             disabled={abriendo}
-            className="rounded-lg bg-sky-500/20 px-3 py-1 text-xs font-medium text-sky-200 ring-1 ring-sky-500/40 hover:bg-sky-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-md bg-[#007ACC]/18 px-3 py-1 text-xs font-medium text-[#d7efff] ring-1 ring-[#007ACC]/45 hover:bg-[#007ACC]/26 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {abriendo ? 'Abriendo…' : 'Aprobar y abrir issue'}
           </button>
@@ -186,7 +186,7 @@ function IssuePreview({ meta, titulo, cuerpo, estado, onAbrir }) {
         {verCuerpo ? 'Ocultar cuerpo' : 'Ver cuerpo del issue'}
       </button>
       {verCuerpo && (
-        <pre className="mt-2 max-h-60 overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-300 ring-1 ring-slate-800 whitespace-pre-wrap">
+        <pre className="mt-2 max-h-60 overflow-auto rounded-md bg-[#080b12] p-3 text-xs text-slate-300 ring-1 ring-white/10 whitespace-pre-wrap">
           {cuerpo}
         </pre>
       )}
@@ -241,7 +241,7 @@ function CopiarBtn({ texto }) {
     <button
       type="button"
       onClick={copiar}
-      className="rounded-lg bg-slate-700 px-3 py-1 text-xs font-medium text-slate-200 hover:bg-slate-600"
+      className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-200 hover:bg-white/[0.07]"
     >
       {copiado ? '✓ Copiado' : 'Copiar'}
     </button>

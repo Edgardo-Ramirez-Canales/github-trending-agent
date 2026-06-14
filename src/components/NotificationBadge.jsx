@@ -4,7 +4,7 @@ export default function NotificationBadge({ count = 0, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="relative rounded-lg bg-slate-800 p-2 text-slate-200 ring-1 ring-slate-700 hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+      className="relative rounded-md border border-white/10 bg-white/[0.04] p-2 text-slate-200 transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
       aria-label={`Notificaciones${count ? `, ${count} sin leer` : ''}`}
     >
       <svg

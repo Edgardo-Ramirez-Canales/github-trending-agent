@@ -15,9 +15,9 @@ export default function DiffViewer({
   const { agregadas, eliminadas } = useMemo(() => resumenDiff(diff), [diff])
 
   return (
-    <div className="mt-3 rounded-lg ring-1 ring-slate-800">
+    <div className="mt-3 rounded-lg ring-1 ring-white/10">
       {/* Encabezado */}
-      <div className="flex items-center justify-between gap-2 rounded-t-lg bg-slate-900 px-3 py-2 text-xs">
+      <div className="flex items-center justify-between gap-2 rounded-t-lg bg-[#080b12] px-3 py-2 text-xs">
         <span className="text-slate-400">
           {editando ? 'Editando contenido' : 'Diff propuesto'}
         </span>
@@ -40,10 +40,10 @@ export default function DiffViewer({
           value={valorEditado}
           onChange={(e) => onCambioTexto?.(e.target.value)}
           spellCheck={false}
-          className="block h-72 w-full resize-y rounded-b-lg bg-slate-950 p-3 font-mono text-xs text-slate-200 focus:outline-none"
+          className="block h-72 w-full resize-y rounded-b-lg bg-[#060910] p-3 font-mono text-xs text-slate-200 outline-none focus:ring-2 focus:ring-[#007ACC]/25"
         />
       ) : (
-        <div className="max-h-80 overflow-auto rounded-b-lg bg-slate-950 font-mono text-xs">
+        <div className="max-h-80 overflow-auto rounded-b-lg bg-[#060910] font-mono text-xs">
           {diff.map((l, idx) => (
             <div
               key={idx}

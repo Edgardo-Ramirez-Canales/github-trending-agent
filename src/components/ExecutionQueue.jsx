@@ -306,13 +306,13 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
   if (!seleccionadas.length) return null
 
   return (
-    <div className="mt-5 rounded-xl bg-slate-800/40 p-4 ring-1 ring-emerald-700/40">
-      <h4 className="text-sm font-semibold text-emerald-200">
+    <div className="mt-5 rounded-lg border border-[#007ACC]/30 bg-[#0d111a]/86 p-4 shadow-2xl shadow-black/20">
+      <h4 className="text-sm font-semibold text-[#d7efff]">
         Modo C — Agente completo
       </h4>
 
       {errorGlobal && (
-        <div className="mt-3 rounded-lg bg-red-500/10 p-3 text-sm text-red-300 ring-1 ring-red-500/30">
+        <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
           {errorGlobal}
         </div>
       )}
@@ -332,7 +332,7 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
       {fase === 'ejecutando' && (
         <div className="mt-4">
           {/* Cancelar todo — siempre visible, rojo, doble confirmación */}
-          <div className="sticky top-16 z-10 mb-4 flex items-center justify-between gap-3 rounded-lg bg-slate-900/95 p-2 ring-1 ring-slate-700">
+          <div className="sticky top-16 z-10 mb-4 flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#080b12]/95 p-2 shadow-xl shadow-black/25">
             <span className="text-xs text-slate-400">
               {progreso || `Categoría ${idx + 1} de ${ordenRef.current.length}`}
             </span>
@@ -401,7 +401,7 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
 
       {/* Cancelado */}
       {fase === 'cancelado' && (
-        <div className="mt-4 rounded-lg bg-slate-900 p-4 text-sm text-slate-300">
+        <div className="mt-4 rounded-lg border border-white/10 bg-[#080b12] p-4 text-sm text-slate-300">
           Ejecución cancelada.
           {prsAbiertos.length > 0 && ' Revisa el panel de notificaciones / GitHub.'}
         </div>
@@ -428,7 +428,7 @@ function ResumenConsolidado({ orden, analisis, prMode, setPrMode, onConfirmar })
           return (
             <div
               key={clave}
-              className="rounded-lg bg-slate-800/60 p-3 text-sm ring-1 ring-slate-700"
+              className="rounded-lg bg-[#101722]/78 p-3 text-sm ring-1 ring-white/10"
             >
               <span className={'rounded-full px-2 py-0.5 text-xs font-semibold ' + meta.chip}>
                 {meta.label}
@@ -479,7 +479,7 @@ function ResumenConsolidado({ orden, analisis, prMode, setPrMode, onConfirmar })
         <button
           type="button"
           onClick={onConfirmar}
-          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400"
+          className="rounded-md bg-[#007ACC] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#007ACC]/20 hover:bg-[#0b8fe8]"
         >
           Confirmar y ejecutar
         </button>
@@ -499,8 +499,8 @@ function OpcionPR({ activo, onClick, titulo, desc }) {
       className={
         'rounded-lg p-3 text-left text-sm ring-1 transition ' +
         (activo
-          ? 'bg-slate-800 ring-emerald-500/50'
-          : 'bg-slate-800/60 ring-slate-700 hover:ring-slate-600')
+          ? 'bg-[#111a27] ring-[#007ACC]/55'
+          : 'bg-[#101722]/70 ring-white/10 hover:ring-[#007ACC]/35')
       }
     >
       <span className="font-semibold text-slate-100">{titulo}</span>
@@ -529,7 +529,7 @@ function CategoriaEjecucion({
     <li
       className={
         'rounded-lg p-3 ring-1 ' +
-        (activa ? 'bg-slate-800 ring-emerald-500/40' : 'bg-slate-800/40 ring-slate-700')
+        (activa ? 'bg-[#111a27] ring-[#007ACC]/45' : 'bg-[#101722]/60 ring-white/10')
       }
     >
       <div className="flex items-center justify-between gap-2">
@@ -576,21 +576,21 @@ function CategoriaEjecucion({
                 <button
                   type="button"
                   onClick={onAprobar}
-                  className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-900 hover:bg-emerald-400"
+                  className="rounded-md bg-[#007ACC] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0b8fe8]"
                 >
                   ✅ Aprobar y continuar
                 </button>
                 <button
                   type="button"
                   onClick={onActivarEdicion}
-                  className="rounded-lg bg-sky-500/20 px-3 py-1.5 text-xs font-medium text-sky-200 ring-1 ring-sky-500/40 hover:bg-sky-500/30"
+                  className="rounded-md bg-[#007ACC]/18 px-3 py-1.5 text-xs font-medium text-[#d7efff] ring-1 ring-[#007ACC]/45 hover:bg-[#007ACC]/26"
                 >
                   ✏️ Aprobar con edición
                 </button>
                 <button
                   type="button"
                   onClick={onSaltar}
-                  className="rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-600"
+                  className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-white/[0.07]"
                 >
                   ⏭️ Saltar esta categoría
                 </button>
@@ -599,7 +599,7 @@ function CategoriaEjecucion({
               <button
                 type="button"
                 onClick={onAprobarEdicion}
-                className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-900 hover:bg-emerald-400"
+                className="rounded-md bg-[#007ACC] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0b8fe8]"
               >
                 Aplicar mi versión y continuar
               </button>
@@ -610,7 +610,7 @@ function CategoriaEjecucion({
 
       {(estado === 'preparando' || estado === 'commiteando') && (
         <p className="mt-2 flex items-center gap-2 text-xs text-slate-400">
-          <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-emerald-400" />
+          <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-700 border-t-[#007ACC]" />
           {estado === 'preparando' ? 'Preparando diff…' : 'Haciendo commit…'}
         </p>
       )}
@@ -620,13 +620,13 @@ function CategoriaEjecucion({
 
 function EstadoBadge({ estado, prUrl }) {
   const map = {
-    pendiente: ['Pendiente', 'bg-slate-700 text-slate-300'],
-    preparando: ['Preparando…', 'bg-slate-700 text-slate-300'],
+    pendiente: ['Pendiente', 'bg-white/10 text-slate-300'],
+    preparando: ['Preparando…', 'bg-white/10 text-slate-300'],
     diff: ['Revisar diff', 'bg-amber-500/15 text-amber-300'],
-    commiteando: ['Commit…', 'bg-slate-700 text-slate-300'],
+    commiteando: ['Commit…', 'bg-white/10 text-slate-300'],
     commiteado: ['Commit hecho', 'bg-emerald-500/15 text-emerald-300'],
     'pr-abierto': ['PR abierto', 'bg-emerald-500/15 text-emerald-300'],
-    saltado: ['Saltado', 'bg-slate-600 text-slate-300'],
+    saltado: ['Saltado', 'bg-white/10 text-slate-300'],
     error: ['Error', 'bg-red-500/15 text-red-300'],
   }
   const [txt, cls] = map[estado] || map.pendiente
@@ -647,7 +647,7 @@ function EstadoBadge({ estado, prUrl }) {
 
 function RollbackPanel({ prs, seleccion, onToggle, onCerrar, onDejar }) {
   return (
-    <div className="rounded-lg bg-red-500/10 p-4 ring-1 ring-red-500/30">
+    <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
       <p className="text-sm font-semibold text-red-200">
         ¿Deseas cerrar los PRs ya abiertos?
       </p>
@@ -675,14 +675,14 @@ function RollbackPanel({ prs, seleccion, onToggle, onCerrar, onDejar }) {
         <button
           type="button"
           onClick={onCerrar}
-          className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+          className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
         >
           Cerrar seleccionados
         </button>
         <button
           type="button"
           onClick={onDejar}
-          className="rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-600"
+          className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-white/[0.07]"
         >
           No cerrar ninguno
         </button>
@@ -694,8 +694,8 @@ function RollbackPanel({ prs, seleccion, onToggle, onCerrar, onDejar }) {
 function ResultadoFinal({ prs, items, orden }) {
   const saltados = orden.filter((c) => items[c]?.estado === 'saltado')
   return (
-    <div className="mt-4 rounded-lg bg-slate-900 p-4">
-      <p className="text-sm font-semibold text-emerald-300">Ejecución completada</p>
+    <div className="mt-4 rounded-lg border border-white/10 bg-[#080b12] p-4">
+      <p className="text-sm font-semibold text-[#7cc7ff]">Ejecución completada</p>
       {prs.length > 0 ? (
         <ul className="mt-2 space-y-1 text-sm">
           {prs.map((pr) => (
@@ -704,7 +704,7 @@ function ResultadoFinal({ prs, items, orden }) {
                 href={pr.url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-emerald-300 hover:underline"
+                className="text-[#7cc7ff] hover:underline"
               >
                 PR #{pr.numero} ({pr.clave}) ↗
               </a>

@@ -13,8 +13,8 @@ export default function NotificationPanel({
   onCerrar,
 }) {
   return (
-    <div className="absolute right-0 top-12 z-30 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl bg-slate-800 shadow-2xl ring-1 ring-slate-700">
-      <div className="flex items-center justify-between border-b border-slate-700 px-4 py-2.5">
+    <div className="absolute right-0 top-12 z-30 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-white/10 bg-[#0d111a] shadow-2xl shadow-black/40">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5">
         <h3 className="text-sm font-semibold text-slate-100">Notificaciones</h3>
         <div className="flex items-center gap-2">
           <button
@@ -41,14 +41,14 @@ export default function NotificationPanel({
             Sin notificaciones todavía.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-700/60">
+          <ul className="divide-y divide-white/10">
             {notificaciones.map((n) => {
               const meta = TIPO_META[n.tipo] || { txt: n.tipo, cls: 'text-slate-300' }
               return (
                 <li
                   key={n.id}
                   className={
-                    'px-4 py-3 text-sm ' + (n.leida ? 'opacity-60' : 'bg-slate-700/20')
+                    'px-4 py-3 text-sm ' + (n.leida ? 'opacity-60' : 'bg-[#007ACC]/8')
                   }
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -73,7 +73,7 @@ export default function NotificationPanel({
                         href={n.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-emerald-400 hover:underline"
+                        className="text-[#7cc7ff] hover:underline"
                       >
                         Ver ↗
                       </a>

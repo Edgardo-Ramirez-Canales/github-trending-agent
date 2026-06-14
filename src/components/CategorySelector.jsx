@@ -30,7 +30,7 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle }) {
   return (
     <div
       className={
-        'rounded-xl bg-slate-800/60 p-4 ring-1 transition ' +
+        'rounded-lg bg-[#101722]/78 p-4 ring-1 transition ' +
         (seleccionada ? cat.anillo : 'ring-slate-700')
       }
     >
@@ -39,7 +39,7 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle }) {
           type="checkbox"
           checked={seleccionada}
           onChange={onToggle}
-          className="mt-1 h-4 w-4 shrink-0 accent-emerald-500"
+          className="mt-1 h-4 w-4 shrink-0 accent-[#007ACC]"
           aria-label={`Seleccionar ${cat.label}`}
         />
         <div className="min-w-0 flex-1">
@@ -71,7 +71,7 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle }) {
 function Detalle({ cat, datos }) {
   const archivo = getArchivoSugerido(cat.clave, datos)
   return (
-    <div className="mt-3 space-y-2 border-t border-slate-700 pt-3 text-sm">
+    <div className="mt-3 space-y-2 border-t border-white/10 pt-3 text-sm">
       <p className="text-xs text-slate-500">
         Archivo objetivo: <code className="text-slate-300">{archivo}</code>
       </p>
@@ -140,7 +140,7 @@ function Detalle({ cat, datos }) {
 function CodeBlock({ texto }) {
   if (!texto) return null
   return (
-    <pre className="max-h-64 overflow-auto rounded-lg bg-slate-950 p-3 text-xs text-slate-300 ring-1 ring-slate-800">
+    <pre className="max-h-64 overflow-auto rounded-md bg-[#080b12] p-3 text-xs text-slate-300 ring-1 ring-white/10">
       <code>{texto}</code>
     </pre>
   )
@@ -150,7 +150,7 @@ function ScoreBar({ score, barra }) {
   const pct = Math.max(0, Math.min(10, score)) * 10
   return (
     <div className="flex items-center gap-2">
-      <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-700">
+      <div className="h-2 w-24 overflow-hidden rounded-full bg-white/10">
         <div className={'h-full rounded-full ' + barra} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-xs font-medium text-slate-300">{score}/10</span>

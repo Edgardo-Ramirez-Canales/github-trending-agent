@@ -11,8 +11,8 @@ const MODOS = [
     id: 'B',
     titulo: 'Modo B — Propuesta al dueño',
     desc: 'Abre un issue real en el repo original con el análisis. Requiere tu aprobación.',
-    chip: 'bg-sky-500/15 text-sky-300',
-    anillo: 'ring-sky-400/50',
+    chip: 'bg-[#007ACC]/15 text-[#7cc7ff]',
+    anillo: 'ring-[#007ACC]/55',
   },
   {
     id: 'C',
@@ -38,9 +38,9 @@ export default function ModeSelector({ modo, onChange, disabled }) {
               type="button"
               onClick={() => onChange?.(m.id)}
               className={
-                'flex flex-col gap-1.5 rounded-xl bg-slate-800/60 p-4 text-left ring-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ' +
+                'flex flex-col gap-1.5 rounded-lg bg-[#101722]/78 p-4 text-left ring-1 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC] ' +
                 (activo
-                  ? m.anillo + ' bg-slate-800'
+                  ? m.anillo + ' bg-[#111a27]'
                   : 'ring-slate-700 hover:ring-slate-600')
               }
             >

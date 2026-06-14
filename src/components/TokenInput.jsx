@@ -31,7 +31,7 @@ export default function TokenInput({ onChange }) {
   const tieneToken = Boolean(token)
 
   return (
-    <div className="rounded-xl bg-slate-800/60 ring-1 ring-slate-700 p-4">
+    <div className="rounded-lg border border-white/10 bg-[#0d111a]/78 p-4 shadow-xl shadow-black/10">
       <div className="flex items-center justify-between gap-2">
         <label htmlFor="gh-token" className="text-sm font-semibold text-slate-200">
           GitHub Token
@@ -41,14 +41,14 @@ export default function TokenInput({ onChange }) {
             className={
               'rounded-full px-2.5 py-0.5 text-xs font-medium ' +
               (source === 'oauth'
-                ? 'bg-emerald-500/15 text-emerald-300'
-                : 'bg-sky-500/15 text-sky-300')
+                ? 'bg-[#007ACC]/15 text-[#7cc7ff] ring-1 ring-[#007ACC]/30'
+                : 'bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/25')
             }
           >
             {source === 'oauth' ? 'desde login OAuth' : 'manual'}
           </span>
         ) : (
-          <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-300">
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-300 ring-1 ring-amber-500/25">
             modo limitado (60 req/h)
           </span>
         )}
@@ -63,12 +63,12 @@ export default function TokenInput({ onChange }) {
           placeholder="ghp_… (override manual opcional)"
           autoComplete="off"
           spellCheck={false}
-          className="min-w-0 flex-1 rounded-lg bg-slate-900 px-3 py-2 text-sm text-slate-100 ring-1 ring-slate-700 placeholder:text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#080b12] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="rounded-lg bg-slate-700 px-3 text-xs font-medium text-slate-200 hover:bg-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="rounded-md border border-white/10 bg-white/[0.04] px-3 text-xs font-medium text-slate-200 transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
           aria-label={visible ? 'Ocultar token' : 'Mostrar token'}
         >
           {visible ? 'Ocultar' : 'Mostrar'}
@@ -77,7 +77,7 @@ export default function TokenInput({ onChange }) {
           <button
             type="button"
             onClick={limpiar}
-            className="rounded-lg bg-red-500/15 px-3 text-xs font-medium text-red-300 hover:bg-red-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+            className="rounded-md bg-red-500/15 px-3 text-xs font-medium text-red-300 ring-1 ring-red-500/25 hover:bg-red-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
           >
             Borrar
           </button>
