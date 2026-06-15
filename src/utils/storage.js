@@ -1,12 +1,27 @@
 // Manejo centralizado de localStorage: GitHub Token, claves de IA y preferencias.
 // Mismo patrón para todos los secretos del usuario — nunca van a Supabase ni al .env.
+import {
+  IDS_PROVEEDORES,
+  esProveedorValido,
+  getProveedor,
+  PROVEEDOR_DEFAULT,
+} from '../services/ai/registry.js'
 
 const KEYS = {
   ghToken: 'gta_github_token',
   ghTokenSource: 'gta_github_token_source', // 'oauth' | 'manual'
-  openaiKey: 'gta_openai_key',
-  geminiKey: 'gta_gemini_key',
-  aiProvider: 'gta_ai_provider', // 'openai' | 'gemini'
+  aiProvider: 'gta_ai_provider', // id de proveedor del registry
+}
+
+// Claves/modelos de IA por proveedor: prefijo + id del registry.
+// Ej: gta_aikey_openai, gta_aimodel_claude.
+const aiKeyName = (id) => `gta_aikey_${id}`
+const aiModelName = (id) => `gta_aimodel_${id}`
+
+// Claves legadas (modelo dual openai/gemini) → se migran una sola vez.
+const LEGACY = {
+  openai: 'gta_openai_key',
+  gemini: 'gta_gemini_key',
 }
 
 // --- helpers internos ---
@@ -59,39 +74,63 @@ export function setGithubTokenFromOAuth(token) {
   setGithubToken(token, 'oauth')
 }
 
-// --- Claves de IA ---
-export function getOpenAIKey() {
-  return get(KEYS.openaiKey)
+// --- Migración de claves legadas (openai/gemini) → formato genérico ---
+// Se ejecuta una vez al cargar el módulo: copia las claves viejas al prefijo
+// nuevo si aún no existen, y elimina las antiguas.
+let migrado = false
+function migrarLegacy() {
+  if (migrado) return
+  migrado = true
+  for (const [id, legacyKey] of Object.entries(LEGACY)) {
+    const valor = get(legacyKey)
+    if (valor && !get(aiKeyName(id))) {
+      set(aiKeyName(id), valor)
+    }
+    if (valor) set(legacyKey, '') // limpia la clave antigua
+  }
 }
-export function setOpenAIKey(key) {
-  set(KEYS.openaiKey, key)
+migrarLegacy()
+
+// --- Claves de IA (genéricas por id de proveedor) ---
+export function getAIKey(id) {
+  return get(aiKeyName(id))
 }
-export function getGeminiKey() {
-  return get(KEYS.geminiKey)
+export function setAIKey(id, key) {
+  set(aiKeyName(id), key)
 }
-export function setGeminiKey(key) {
-  set(KEYS.geminiKey, key)
+
+// --- Modelo elegido por proveedor ---
+// Devuelve el modelo guardado o el modeloDefault del registry como fallback.
+export function getAIModel(id) {
+  const guardado = get(aiModelName(id))
+  if (guardado) return guardado
+  return getProveedor(id)?.modeloDefault || ''
+}
+export function setAIModel(id, modelo) {
+  set(aiModelName(id), modelo)
 }
 
 // --- Proveedor de IA activo ---
-// Si no hay preferencia guardada, se elige automáticamente la única clave disponible.
+// Si no hay preferencia válida guardada, se elige el primer proveedor que tenga clave.
 export function getActiveProvider() {
   const stored = get(KEYS.aiProvider)
-  if (stored === 'openai' || stored === 'gemini') return stored
-  // Auto-selección: si solo hay una clave, esa queda activa.
-  const hasOpenAI = Boolean(getOpenAIKey())
-  const hasGemini = Boolean(getGeminiKey())
-  if (hasOpenAI && !hasGemini) return 'openai'
-  if (hasGemini && !hasOpenAI) return 'gemini'
-  return hasOpenAI ? 'openai' : 'gemini'
+  if (esProveedorValido(stored)) return stored
+  // Auto-selección: primer proveedor con clave configurada.
+  const conClave = IDS_PROVEEDORES.find((id) => Boolean(getAIKey(id)))
+  return conClave || PROVEEDOR_DEFAULT
 }
 
 export function setActiveProvider(provider) {
-  if (provider !== 'openai' && provider !== 'gemini') return
+  if (!esProveedorValido(provider)) return
   set(KEYS.aiProvider, provider)
 }
 
 // Devuelve la clave del proveedor actualmente activo (para los servicios de IA).
 export function getActiveAIKey() {
-  return getActiveProvider() === 'openai' ? getOpenAIKey() : getGeminiKey()
+  return getAIKey(getActiveProvider())
+}
+
+// Devuelve el modelo del proveedor actualmente activo.
+export function getActiveAIModel() {
+  return getAIModel(getActiveProvider())
 }

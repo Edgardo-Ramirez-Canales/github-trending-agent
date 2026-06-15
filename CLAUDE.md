@@ -2,7 +2,7 @@
 
 ## Stack
 - **Frontend**: React 18 + Vite 5 + Tailwind CSS v4
-- **IA**: Provider dual configurable — OpenAI API o Google Gemini API (elige usuario en UI)
+- **IA**: Multi-proveedor configurable vía registry — OpenAI, Gemini, Claude (Anthropic), DeepSeek, MiniMax (elige usuario en UI). Ollama pendiente (fase 2)
 - **DB**: Supabase (3 tablas + RLS por usuario)
 - **Auth**: GitHub OAuth (Supabase Auth)
 - **Email**: Resend via Supabase Edge Function
@@ -25,7 +25,8 @@ src/
 │                     # DiffViewer, ExecutionQueue, ModeRunner, etc.)
 │   services/
 │   ├── github.js     # GitHub REST API (lectura + fork/commit/PR/issue)
-│   ├── ai/           # index (unifica), openai.js, gemini.js, prompts.js
+│   ├── ai/           # registry (fuente de verdad), index (despacho), prompts.js,
+│   │                 # openai.js, gemini.js, claude.js, deepseek.js, minimax.js, _json.js
 │   ├── supabase.js   # Cliente + queries (repos_vistos, contribuciones, notificaciones)
 │   ├── auth.js       # GitHub OAuth + captura de provider_token
 │   └── notifications.js  # Polling de PR/issue + Edge Function email
@@ -39,9 +40,9 @@ supabase/
 ```
 
 ## Convenios importantes
-1. **Secretos del usuario**: GitHub Token, claves OpenAI y Gemini viven SOLO en localStorage (utils/storage.js), nunca en .env ni Supabase
-2. **Proveedor dual de IA**: openai.js y gemini.js exponen la misma firma `(prompt, apiKey) => JSON`. El switch lo hace `services/ai/index.js` sin lógica condicional en el resto de la app
-3. **Prompt compartido** (prompts.js): idéntico para ambos proveedores, devuelve JSON con 5 categorías
+1. **Secretos del usuario**: GitHub Token y claves de IA (una por proveedor: `gta_aikey_<id>`) viven SOLO en localStorage (utils/storage.js), nunca en .env ni Supabase
+2. **Multi-proveedor de IA vía registry**: `services/ai/registry.js` es la ÚNICA fuente de verdad (id, nombre, placeholder, modelos, fn `analizar`). Todos los servicios exponen la misma firma `(prompt, apiKey, modelo) => JSON`. El switch lo hace `services/ai/index.js` derivándolo del registry — agregar un proveedor = 1 entrada en el registry + 1 archivo de servicio, sin tocar UI, storage ni index
+3. **Prompt compartido** (prompts.js): idéntico para todos los proveedores, devuelve JSON con 5 categorías. Proveedores sin JSON-mode (Claude, MiniMax) pasan por `_json.js` (extractor tolerante)
 4. **Tailwind v4**: sin CSS custom, usar clases utilitarias. Vite plugin `@tailwindcss/vite`
 5. **UI en español**: todos los textos, botones, labels y mensajes
 6. **ES Modules**: `type: "module"` en package.json, imports con extensión `.js`

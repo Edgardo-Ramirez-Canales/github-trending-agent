@@ -1,11 +1,9 @@
-// Proveedor OpenAI. Firma común: analizar(prompt, apiKey, modelo) → objeto JSON.
-// Esto permite que ai/index.js intercambie proveedores sin lógica condicional extra.
+// Proveedor DeepSeek. Firma común: analizar(prompt, apiKey, modelo) → objeto JSON.
+// API compatible con OpenAI (chat/completions + response_format json_object),
+// por eso es casi idéntico a openai.js, solo cambia el endpoint.
 
-const ENDPOINT = 'https://api.openai.com/v1/chat/completions'
-
-// Modelo por defecto si index.js no pasa uno. gpt-4o-mini es económico y soporta
-// JSON mode; los modelos disponibles se listan en el registry (registry.js).
-const MODELO_DEFAULT = 'gpt-4o-mini'
+const ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
+const MODELO_DEFAULT = 'deepseek-chat'
 
 export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
   const res = await fetch(ENDPOINT, {
@@ -24,12 +22,12 @@ export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
 
   if (!res.ok) {
     const detalle = await res.text().catch(() => '')
-    throw new Error(`OpenAI (${res.status}): ${detalle.slice(0, 200)}`)
+    throw new Error(`DeepSeek (${res.status}): ${detalle.slice(0, 200)}`)
   }
 
   const data = await res.json()
   const contenido = data?.choices?.[0]?.message?.content
-  if (!contenido) throw new Error('OpenAI: respuesta vacía')
+  if (!contenido) throw new Error('DeepSeek: respuesta vacía')
 
   // Puede lanzar SyntaxError si el JSON viene mal formado → index.js reintenta.
   return JSON.parse(contenido)

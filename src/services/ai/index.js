@@ -1,18 +1,18 @@
-import { getActiveProvider, getActiveAIKey } from '../../utils/storage.js'
+import {
+  getActiveProvider,
+  getActiveAIKey,
+  getActiveAIModel,
+} from '../../utils/storage.js'
 import { construirPrompt, CATEGORIAS_REQUERIDAS } from './prompts.js'
-import { analizar as analizarOpenAI } from './openai.js'
-import { analizar as analizarGemini } from './gemini.js'
+import { PROVEEDORES, getProveedor } from './registry.js'
 
 // Servicio unificado de IA. El resto de la app solo llama a analizarRepo();
 // aquí se decide el proveedor activo y se intercambia sin lógica condicional fuera.
-const PROVEEDORES = {
-  openai: analizarOpenAI,
-  gemini: analizarGemini,
-}
+// Las funciones y nombres se derivan del registry (registry.js) → agregar un
+// proveedor nuevo no requiere tocar este archivo.
+const NOMBRE = Object.fromEntries(PROVEEDORES.map((p) => [p.id, p.nombre]))
 
-const NOMBRE = { openai: 'OpenAI', gemini: 'Gemini' }
-
-// Valida que el JSON traiga las 5 categorías esperadas.
+// Valida que el JSON traiga las categorías esperadas.
 function validarEstructura(json) {
   if (!json || typeof json !== 'object') {
     throw new Error('La IA no devolvió un objeto JSON')
@@ -24,29 +24,34 @@ function validarEstructura(json) {
 }
 
 // analizarRepo(repoData):
-//   → lee proveedor activo + su clave (localStorage)
+//   → lee proveedor activo + su clave + su modelo (localStorage)
 //   → arma el prompt compartido
 //   → llama al proveedor; si el parseo/estructura falla, reintenta UNA vez
-//   → devuelve el objeto de 5 categorías + el proveedor usado
+//   → devuelve el objeto de categorías + el proveedor usado
 export async function analizarRepo(repoData) {
-  const proveedor = getActiveProvider()
+  const proveedorId = getActiveProvider()
   const apiKey = getActiveAIKey()
+  const modelo = getActiveAIModel()
+  const proveedor = getProveedor(proveedorId)
+
+  if (!proveedor) {
+    throw new Error(`Proveedor de IA desconocido: ${proveedorId}`)
+  }
 
   if (!apiKey) {
     throw new Error(
-      `No hay clave configurada para ${NOMBRE[proveedor]}. Añádela en el selector de proveedor de IA.`,
+      `No hay clave configurada para ${proveedor.nombre}. Añádela en el selector de proveedor de IA.`,
     )
   }
 
-  const fn = PROVEEDORES[proveedor]
   const prompt = construirPrompt(repoData)
 
   let ultimoError
   for (let intento = 1; intento <= 2; intento++) {
     try {
-      const json = await fn(prompt, apiKey)
+      const json = await proveedor.analizar(prompt, apiKey, modelo)
       validarEstructura(json)
-      return { ...json, _proveedor: proveedor }
+      return { ...json, _proveedor: proveedorId }
     } catch (e) {
       ultimoError = e
       // Reintento solo si fue fallo de formato/estructura (no de red/clave).
@@ -54,10 +59,10 @@ export async function analizarRepo(repoData) {
   }
 
   throw new Error(
-    `${NOMBRE[proveedor]} no devolvió un análisis válido tras 2 intentos: ${ultimoError?.message ?? ''}`,
+    `${proveedor.nombre} no devolvió un análisis válido tras 2 intentos: ${ultimoError?.message ?? ''}`,
   )
 }
 
 export function nombreProveedorActivo() {
-  return NOMBRE[getActiveProvider()]
+  return NOMBRE[getActiveProvider()] || getActiveProvider()
 }

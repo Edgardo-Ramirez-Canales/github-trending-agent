@@ -1,15 +1,15 @@
-// Proveedor Google Gemini. Firma idéntica a openai.js: analizar(prompt, apiKey) → objeto JSON.
+// Proveedor Google Gemini. Firma común: analizar(prompt, apiKey, modelo) → objeto JSON.
 
 // gemini-2.5-flash: nivel gratuito, ventana de 1M tokens (ideal para README +
-// issues + estructura completos). Verificar disponibilidad en ai.google.dev/pricing.
-const MODELO = 'gemini-2.5-flash'
+// issues + estructura completos). Modelos disponibles en el registry (registry.js).
+const MODELO_DEFAULT = 'gemini-2.5-flash'
 
-function endpoint(apiKey) {
-  return `https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent?key=${apiKey}`
+function endpoint(apiKey, modelo) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`
 }
 
-export async function analizar(prompt, apiKey) {
-  const res = await fetch(endpoint(apiKey), {
+export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
+  const res = await fetch(endpoint(apiKey, modelo), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
