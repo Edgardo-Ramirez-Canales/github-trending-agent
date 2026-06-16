@@ -36,6 +36,7 @@ export function useTrendingRepos(filtros = {}) {
     lenguaje,
     sort,
     order,
+    busqueda = '', // texto libre → búsqueda real en GitHub (servidor)
   } = filtros
 
   const [repos, setRepos] = useState([])
@@ -55,13 +56,16 @@ export function useTrendingRepos(filtros = {}) {
     if (modo === 'usuario') {
       if (!usuario.trim()) return []
       // Sin piso de estrellas: queremos ver todos los repos del usuario.
-      return buscarRepos({ modo: 'usuario', usuario, fecha, pushedDesde, lenguaje, sort, order })
+      return buscarRepos({ modo: 'usuario', usuario, fecha, pushedDesde, lenguaje, sort, order, busqueda })
     }
     // 'trending': motor flexible con fecha (preset/personalizado) y, si no se
     // eligió fecha, fallback a "últimos `dias`". Piso de estrellas del servidor
     // = minEstrellas (default 100); el slider de la UI filtra encima en cliente.
-    return buscarRepos({ modo: 'trending', fecha, dias, minEstrellas, pushedDesde, lenguaje, sort, order })
-  }, [modo, urlRepo, usuario, dias, minEstrellas, pushedDesde, lenguaje, sort, order, fecha])
+    // Con búsqueda real activa ampliamos el piso a 60 días para que el término
+    // alcance más repos (sigue acotado para no traer historia completa de GitHub).
+    const diasBase = busqueda.trim() ? 60 : dias
+    return buscarRepos({ modo: 'trending', fecha, dias: diasBase, minEstrellas, pushedDesde, lenguaje, sort, order, busqueda })
+  }, [modo, urlRepo, usuario, dias, minEstrellas, pushedDesde, lenguaje, sort, order, fecha, busqueda])
 
   const cargar = useCallback(async () => {
     setCargando(true)

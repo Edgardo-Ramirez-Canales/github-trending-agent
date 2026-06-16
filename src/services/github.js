@@ -170,8 +170,13 @@ export function construirQuery({
   pushedDesde, // 'YYYY-MM-DD' → solo repos con push reciente (repos "vivos")
   usuario, // login o nombre de organización (modo usuario)
   lenguaje, // un lenguaje único a nivel query (opcional)
+  busqueda, // término de texto libre → GitHub busca en nombre/descripción/README
 } = {}) {
   const partes = []
+
+  // Texto libre primero: GitHub lo matchea contra nombre, descripción y README.
+  const termino = (busqueda || '').trim()
+  if (termino) partes.push(termino)
 
   if (modo === 'usuario' && usuario) {
     partes.push(`user:${usuario.trim()}`)

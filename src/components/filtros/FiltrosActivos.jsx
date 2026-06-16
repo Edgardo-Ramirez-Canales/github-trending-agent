@@ -73,6 +73,13 @@ export default function FiltrosActivos({ filtros, setFiltro, setFecha, toggleLen
       </Chip>,
     )
   }
+  if (filtros.pushedDesde) {
+    chips.push(
+      <Chip key="pushed" onRemove={() => setFiltro('pushedDesde', '')}>
+        Activo desde {filtros.pushedDesde}
+      </Chip>,
+    )
+  }
   if (filtros.keyword.trim()) {
     chips.push(
       <Chip key="kw" onRemove={() => setFiltro('keyword', '')}>

@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { useAuth } from './hooks/useAuth.js'
 import { useTrendingRepos } from './hooks/useTrendingRepos.js'
 import { useFiltros } from './hooks/useFiltros.js'
-import { useDebouncedValue } from './hooks/useDebouncedValue.js'
 import { useContributions } from './hooks/useContributions.js'
 import { registrarRepoVisto } from './services/supabase.js'
 import LoginScreen from './components/LoginScreen.jsx'
@@ -111,9 +110,6 @@ function TrendingSection() {
   const { repos, cargando, error, recargar } = useTrendingRepos(filtrosServidor)
   const [seleccionado, setSeleccionado] = useState(null)
 
-  // Keyword diferida: no recalcula la lista en cada tecla.
-  const keywordDebounced = useDebouncedValue(filtros.keyword, 250)
-
   // Lista de lenguajes disponibles (para el filtro múltiple).
   const lenguajesDisponibles = useMemo(() => {
     const set = new Set(repos.map((r) => r.lenguaje).filter((l) => l && l !== 'N/D'))
@@ -127,18 +123,14 @@ function TrendingSection() {
   }, [filtros.modo, filtros.fecha.preset])
 
   // Aplica filtros de CLIENTE + orden y recorta a 15. "En llamas" se fijan arriba.
+  // (keyword ya no filtra acá: pasó a búsqueda real en GitHub vía filtrosServidor.)
   const visibles = useMemo(() => {
-    const kw = keywordDebounced.trim().toLowerCase()
     let lista = repos.filter((r) => {
       if (filtros.lenguajes.length && !filtros.lenguajes.includes(r.lenguaje)) return false
       if (r.estrellas < filtros.minEstrellas) return false
       if (filtros.maxEstrellas != null && r.estrellas > filtros.maxEstrellas) return false
       if (filtros.velocidadMin && r.velocidad < filtros.velocidadMin) return false
       if (filtros.soloOriginales && r.esFork) return false
-      if (kw) {
-        const heno = `${r.nombre} ${r.descripcion} ${r.topics.join(' ')}`.toLowerCase()
-        if (!heno.includes(kw)) return false
-      }
       return true
     })
 
@@ -160,7 +152,6 @@ function TrendingSection() {
     filtros.maxEstrellas,
     filtros.velocidadMin,
     filtros.soloOriginales,
-    keywordDebounced,
     filtros.orden,
   ])
 

@@ -1,10 +1,22 @@
-import FiltroEstrellas from './FiltroEstrellas.jsx'
+import FiltroRangoEstrellas from './FiltroRangoEstrellas.jsx'
 import FiltroLenguajes from './FiltroLenguajes.jsx'
 import FiltroFechas from './FiltroFechas.jsx'
+import FiltroActividad from './FiltroActividad.jsx'
 import ToggleVistos from './ToggleVistos.jsx'
+import ListaSeleccion from './ListaSeleccion.jsx'
+import { OPCIONES_ORDEN } from './Segmentado.jsx'
+import { LABEL, INPUT } from './estilos.js'
+import { IconSearch } from '../icons.jsx'
 
 // Contenedor de los controles de filtro del modo Trending.
 // Estado y lógica viven en useFiltros (en el padre); aquí solo se renderiza.
+//
+// Orden visual (lo más importante arriba):
+//   búsqueda en GitHub (ancho)
+//   Creados en (izq) · Incluir vistos (esquina sup. derecha)
+//   Actualizado (check exclusivo) · Ordenar por (radio)
+//   Estrellas (rango) · Velocidad mínima
+//   Lenguaje (ancho)
 export default function BarraFiltros({
   filtros,
   setFiltro,
@@ -14,70 +26,81 @@ export default function BarraFiltros({
   sugerirVistos,
 }) {
   return (
-    <div className="mt-4 grid gap-4 rounded-lg border border-white/[0.08] bg-[#0e0f11] p-4 shadow-2xl shadow-black/20 md:grid-cols-2">
-      <FiltroFechas value={filtros.fecha} onChange={setFecha} />
-
-      <FiltroEstrellas
-        value={filtros.minEstrellas}
-        onChange={(v) => setFiltro('minEstrellas', v)}
-      />
-
+    <div className="mt-4 rounded-lg border border-white/[0.08] bg-[#0e0f11] p-4 shadow-2xl shadow-black/20">
+      {/* Búsqueda real en GitHub: acción principal, arriba y a todo el ancho */}
       <div>
-        <label htmlFor="velmin" className="text-xs font-medium text-[#8a8f98]">
-          Velocidad mínima: {filtros.velocidadMin} ★/día
+        <label htmlFor="kw" className={LABEL}>
+          Buscar en GitHub
         </label>
-        <input
-          id="velmin"
-          type="range"
-          min="0"
-          max="500"
-          step="5"
-          value={filtros.velocidadMin}
-          onChange={(e) => setFiltro('velocidadMin', Number(e.target.value))}
-          className="mt-2 w-full ctrl-range"
+        <div className="relative mt-1">
+          <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#62666d]" />
+          <input
+            id="kw"
+            type="text"
+            value={filtros.keyword}
+            onChange={(e) => setFiltro('keyword', e.target.value)}
+            placeholder="Nombre, tópico o palabra clave… (ej: cli, ai, rust)"
+            className={'pl-9 ' + INPUT}
+          />
+        </div>
+        <p className="mt-1 text-[11px] text-[#62666d]">
+          Consulta GitHub por nombre, descripción y README — no solo la lista actual.
+        </p>
+      </div>
+
+      {/* Fechas a la izquierda, "incluir vistos" anclado arriba a la derecha */}
+      <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
+        <FiltroFechas value={filtros.fecha} onChange={setFecha} />
+        <ToggleVistos
+          checked={filtros.incluirVistos}
+          onChange={(v) => setFiltro('incluirVistos', v)}
+          sugerir={sugerirVistos}
         />
       </div>
 
-      <div>
-        <label htmlFor="kw" className="text-xs font-medium text-[#8a8f98]">
-          Keyword / tópico
-        </label>
-        <input
-          id="kw"
-          type="text"
-          value={filtros.keyword}
-          onChange={(e) => setFiltro('keyword', e.target.value)}
-          placeholder="ej: cli, ai, rust…"
-          className="mt-1 w-full rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] placeholder:text-[#4a4d54] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
+      <div className="mt-5 grid gap-x-6 gap-y-5 md:grid-cols-2">
+        <FiltroActividad
+          value={filtros.pushedDesde}
+          onChange={(v) => setFiltro('pushedDesde', v)}
         />
-      </div>
 
-      <FiltroLenguajes
-        disponibles={lenguajesDisponibles}
-        seleccionados={filtros.lenguajes}
-        onToggle={toggleLenguaje}
-      />
-
-      <ToggleVistos
-        checked={filtros.incluirVistos}
-        onChange={(v) => setFiltro('incluirVistos', v)}
-        sugerir={sugerirVistos}
-      />
-
-      <div>
-        <label htmlFor="orden" className="text-xs font-medium text-[#8a8f98]">
-          Ordenar por
-        </label>
-        <select
-          id="orden"
+        <ListaSeleccion
+          etiqueta="Ordenar por"
+          tipo="radio"
           value={filtros.orden}
-          onChange={(e) => setFiltro('orden', e.target.value)}
-          className="mt-1 w-full rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
-        >
-          <option value="velocidad">Velocidad de crecimiento</option>
-          <option value="estrellas">Total de estrellas</option>
-          <option value="fecha">Fecha de creación</option>
-        </select>
+          onChange={(v) => setFiltro('orden', v)}
+          opciones={OPCIONES_ORDEN}
+        />
+
+        <FiltroRangoEstrellas
+          min={filtros.minEstrellas}
+          max={filtros.maxEstrellas}
+          onMin={(v) => setFiltro('minEstrellas', v)}
+          onMax={(v) => setFiltro('maxEstrellas', v)}
+        />
+
+        <div>
+          <label htmlFor="velmin" className={LABEL}>
+            Velocidad mínima: {filtros.velocidadMin} ★/día
+          </label>
+          <input
+            id="velmin"
+            type="range"
+            min="0"
+            max="500"
+            step="5"
+            value={filtros.velocidadMin}
+            onChange={(e) => setFiltro('velocidadMin', Number(e.target.value))}
+            className="mt-3 w-full ctrl-range"
+          />
+        </div>
+
+        <FiltroLenguajes
+          disponibles={lenguajesDisponibles}
+          seleccionados={filtros.lenguajes}
+          onToggle={toggleLenguaje}
+          className="md:col-span-2"
+        />
       </div>
     </div>
   )

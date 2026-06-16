@@ -118,6 +118,47 @@ button {
   outline-offset: 2px;
 }
 
+/* Slider de rango (doble manija). Dos inputs superpuestos sobre un riel común;
+   el track propio de cada input se hace transparente para no taparse entre sí. */
+.range-dual {
+  position: relative;
+  height: 16px;
+}
+.range-dual .riel {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.range-dual .relleno {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: #007acc;
+}
+.range-dual input[type='range'] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  background: none;
+  pointer-events: none; /* solo el thumb captura eventos */
+}
+.range-dual input[type='range']::-webkit-slider-thumb {
+  pointer-events: auto;
+}
+.range-dual input[type='range']::-moz-range-thumb {
+  pointer-events: auto;
+}
+
 /* Accesibilidad: respeta la preferencia del sistema de movimiento reducido. */
 @media (prefers-reduced-motion: reduce) {
   *,

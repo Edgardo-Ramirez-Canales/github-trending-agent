@@ -1,36 +1,32 @@
+import { LABEL, pill } from './estilos.js'
+
 // Filtro de fecha de creación (servidor): presets rápidos + rango personalizado.
 // `value` = { preset, desde, hasta }. `onChange` recibe un merge parcial.
+// "Todas" (preset '') es el estado neutro por defecto al cargar el sitio.
 
 const PRESETS = [
-  { id: '', label: 'Cualquiera' },
+  { id: '', label: 'Todas' },
   { id: 'semana', label: 'Última semana' },
   { id: 'mesActual', label: 'Mes actual' },
-  { id: '3meses', label: '3 meses' },
-  { id: '6meses', label: '6 meses' },
-  { id: '9meses', label: '9 meses' },
-  { id: 'anioActual', label: 'Año actual' },
-  { id: 'ultimoAnio', label: 'Último año' },
   { id: 'personalizado', label: 'Personalizado' },
 ]
+
+const FECHA_INPUT =
+  'rounded-md border border-white/[0.08] bg-[#0a0b0d] px-2.5 py-1.5 text-sm text-[#f7f8f8] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25 [color-scheme:dark]'
 
 export default function FiltroFechas({ value, onChange }) {
   const { preset, desde, hasta } = value
 
   return (
-    <div className="md:col-span-2">
-      <span className="text-xs font-medium text-[#8a8f98]">Creados en</span>
+    <div>
+      <span className={LABEL}>Creados en</span>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {PRESETS.map((p) => (
           <button
-            key={p.id || 'cualquiera'}
+            key={p.id || 'todas'}
             type="button"
             onClick={() => onChange({ preset: p.id, desde: '', hasta: '' })}
-            className={
-              'rounded-md px-2.5 py-1 text-xs font-medium transition ' +
-              (preset === p.id
-                ? 'bg-[#007ACC]/18 text-sky-100 ring-1 ring-[#007ACC]/50'
-                : 'bg-white/[0.04] text-[#c4c7cc] ring-1 ring-white/[0.08] hover:bg-white/[0.07]')
-            }
+            className={pill(preset === p.id)}
           >
             {p.label}
           </button>
@@ -38,25 +34,24 @@ export default function FiltroFechas({ value, onChange }) {
       </div>
 
       {preset === 'personalizado' && (
-        <div className="mt-3 flex flex-wrap items-end gap-3">
-          <label className="text-xs text-[#8a8f98]">
-            Desde
-            <input
-              type="date"
-              value={desde || ''}
-              onChange={(e) => onChange({ desde: e.target.value })}
-              className="mt-1 block rounded-md border border-white/[0.08] bg-[#0a0b0d] px-2 py-1.5 text-sm text-[#f7f8f8] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
-            />
-          </label>
-          <label className="text-xs text-[#8a8f98]">
-            Hasta
-            <input
-              type="date"
-              value={hasta || ''}
-              onChange={(e) => onChange({ hasta: e.target.value })}
-              className="mt-1 block rounded-md border border-white/[0.08] bg-[#0a0b0d] px-2 py-1.5 text-sm text-[#f7f8f8] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
-            />
-          </label>
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+          <span className={LABEL}>Desde</span>
+          <input
+            type="date"
+            aria-label="Fecha desde"
+            value={desde || ''}
+            onChange={(e) => onChange({ desde: e.target.value })}
+            className={FECHA_INPUT}
+          />
+          <span className="text-[#62666d]">→</span>
+          <span className={LABEL}>Hasta</span>
+          <input
+            type="date"
+            aria-label="Fecha hasta"
+            value={hasta || ''}
+            onChange={(e) => onChange({ hasta: e.target.value })}
+            className={FECHA_INPUT}
+          />
         </div>
       )}
     </div>

@@ -1,14 +1,19 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { getFiltros, setFiltros as persistirFiltros } from '../utils/storage.js'
+import { useDebouncedValue } from './useDebouncedValue.js'
 
 // Estado centralizado de los filtros del listado de repos (Fase 3).
 //
 // Separa explícitamente dos familias de filtros:
 //   - SERVIDOR: cambian la pregunta a GitHub → disparan re-fetch.
-//     (modo, fecha, minEstrellas, maxEstrellas, pushedDesde, usuario, urlRepo,
-//      lenguaje único, sort, order, incluirVistos)
+//     (modo, fecha, pushedDesde, usuario, urlRepo, lenguaje único, sort, order,
+//      incluirVistos, y la búsqueda de texto libre derivada de keyword)
 //   - CLIENTE: solo recortan/ordenan lo ya traído, sin volver a GitHub.
-//     (lenguajes multi, keyword, orden visual)
+//     (minEstrellas, maxEstrellas, velocidadMin, soloOriginales, lenguajes multi,
+//      orden visual)
+//
+// `keyword` es de servidor pero se debouncea antes de entrar a filtrosServidor
+// para no disparar un fetch por cada tecla.
 //
 // `filtrosServidor` se memoiza para pasarlo tal cual a useTrendingRepos sin
 // provocar re-fetch en cada tecleo de los filtros de cliente.
@@ -55,6 +60,9 @@ function cargarIniciales() {
 
 export function useFiltros() {
   const [filtros, setFiltrosState] = useState(cargarIniciales)
+
+  // Keyword → búsqueda de servidor: se difiere para no consultar GitHub en cada tecla.
+  const busqueda = useDebouncedValue(filtros.keyword, 450)
 
   // Persistir (omitiendo campos transitorios) cada vez que cambian.
   const primera = useRef(true)
@@ -111,6 +119,7 @@ export function useFiltros() {
       sort: filtros.sort,
       order: filtros.order,
       incluirVistos: filtros.incluirVistos,
+      busqueda: busqueda.trim(),
     }),
     [
       filtros.modo,
@@ -122,6 +131,7 @@ export function useFiltros() {
       filtros.sort,
       filtros.order,
       filtros.incluirVistos,
+      busqueda,
     ],
   )
 
