@@ -11,7 +11,11 @@ const KEYS = {
   ghToken: 'gta_github_token',
   ghTokenSource: 'gta_github_token_source', // 'oauth' | 'manual'
   aiProvider: 'gta_ai_provider', // id de proveedor del registry
+  filtros: 'gta_filtros', // estado de filtros del listado (JSON)
+  historialRepos: 'gta_historial_repos', // búsquedas recientes por URL (JSON)
 }
+
+const MAX_HISTORIAL = 6
 
 // Claves/modelos de IA por proveedor: prefijo + id del registry.
 // Ej: gta_aikey_openai, gta_aimodel_claude.
@@ -43,6 +47,53 @@ function set(key, value) {
   } catch {
     /* localStorage no disponible: se ignora silenciosamente */
   }
+}
+
+// --- Preferencias JSON genéricas ---
+// Lee/escribe un objeto serializado. Devuelve `fallback` si no hay nada o si
+// el JSON está corrupto (nunca lanza).
+function getJSON(key, fallback = null) {
+  const crudo = get(key)
+  if (!crudo) return fallback
+  try {
+    return JSON.parse(crudo)
+  } catch {
+    return fallback
+  }
+}
+
+function setJSON(key, value) {
+  if (value === undefined || value === null) {
+    set(key, '')
+    return
+  }
+  try {
+    set(key, JSON.stringify(value))
+  } catch {
+    /* valor no serializable: se ignora */
+  }
+}
+
+// --- Filtros del listado de repos ---
+export function getFiltros(fallback = null) {
+  return getJSON(KEYS.filtros, fallback)
+}
+export function setFiltros(filtros) {
+  setJSON(KEYS.filtros, filtros)
+}
+
+// --- Historial de búsquedas por URL (modo repo) ---
+// Lista de "owner/repo", sin duplicados, más reciente primero, máx MAX_HISTORIAL.
+export function getHistorialRepos() {
+  const v = getJSON(KEYS.historialRepos, [])
+  return Array.isArray(v) ? v : []
+}
+export function agregarHistorialRepo(nombre) {
+  if (!nombre) return getHistorialRepos()
+  const previo = getHistorialRepos().filter((n) => n !== nombre)
+  const nuevo = [nombre, ...previo].slice(0, MAX_HISTORIAL)
+  setJSON(KEYS.historialRepos, nuevo)
+  return nuevo
 }
 
 // --- GitHub Token ---

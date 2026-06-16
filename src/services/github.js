@@ -78,25 +78,6 @@ export class GithubError extends Error {
 // LECTURA
 // ============================================================================
 
-// Fecha ISO de hace N días (para el filtro `created:>` del search).
-function fechaHaceDias(dias) {
-  const d = new Date()
-  d.setDate(d.getDate() - dias)
-  return d.toISOString().slice(0, 10) // YYYY-MM-DD
-}
-
-// Busca repos "trending": creados en los últimos 30 días, con estrellas, ordenados.
-// No existe endpoint oficial de trending → se aproxima con el search + velocidad.
-export async function buscarTrending({ dias = 30, minEstrellas = 100 } = {}) {
-  const q = `created:>${fechaHaceDias(dias)} stars:>${minEstrellas}`
-  const path =
-    `/search/repositories?q=${encodeURIComponent(q)}` +
-    `&sort=stars&order=desc&per_page=60`
-  const data = await ghFetch(path)
-  const items = data?.items ?? []
-  return items.map(normalizarRepo)
-}
-
 // Normaliza un repo del search a la forma que consume la UI.
 function normalizarRepo(r) {
   const creado = new Date(r.created_at)
@@ -117,11 +98,151 @@ function normalizarRepo(r) {
     topics: r.topics || [],
     url: r.html_url,
     avatar: r.owner?.avatar_url,
+    esFork: Boolean(r.fork),
     creadoEn: r.created_at,
     diasVida,
     // Velocidad de crecimiento aproximada: estrellas por día desde su creación.
     velocidad: Math.round((r.stargazers_count / diasVida) * 10) / 10,
   }
+}
+
+// ----------------------------------------------------------------------------
+// Motor de consultas flexible (Fase 1)
+// Permite los 3 modos (trending / usuario / repo) construyendo la query del
+// search a partir de un objeto de filtros. El resto de la tubería
+// (normalizarRepo, UI) se reutiliza igual entre modos.
+// ----------------------------------------------------------------------------
+
+// Fecha ISO (YYYY-MM-DD) a partir de un objeto Date.
+function fechaISO(d) {
+  return d.toISOString().slice(0, 10)
+}
+
+// Resuelve un preset de fecha o un rango a medida al fragmento `created:` del
+// search de GitHub. Devuelve '' si no hay filtro de fecha.
+//   preset: 'semana' | 'mesActual' | '3meses' | '6meses' | '9meses'
+//         | 'anioActual' | 'ultimoAnio' | 'personalizado'
+//   desde/hasta: 'YYYY-MM-DD' (solo cuando preset === 'personalizado')
+export function construirRangoFecha({ preset, desde, hasta } = {}) {
+  const hoy = new Date()
+
+  if (preset === 'personalizado') {
+    if (desde && hasta) return `created:${desde}..${hasta}`
+    if (desde) return `created:>=${desde}`
+    if (hasta) return `created:<=${hasta}`
+    return ''
+  }
+
+  const haceDias = (n) => {
+    const d = new Date()
+    d.setDate(d.getDate() - n)
+    return fechaISO(d)
+  }
+
+  switch (preset) {
+    case 'semana':
+      return `created:>=${haceDias(7)}`
+    case 'mesActual':
+      return `created:>=${fechaISO(new Date(hoy.getFullYear(), hoy.getMonth(), 1))}`
+    case '3meses':
+      return `created:>=${haceDias(90)}`
+    case '6meses':
+      return `created:>=${haceDias(180)}`
+    case '9meses':
+      return `created:>=${haceDias(270)}`
+    case 'anioActual':
+      return `created:>=${fechaISO(new Date(hoy.getFullYear(), 0, 1))}`
+    case 'ultimoAnio':
+      return `created:>=${haceDias(365)}`
+    default:
+      return ''
+  }
+}
+
+// Construye el string `q` del search a partir de los filtros de servidor.
+// Filtros de cliente (keyword visual, orden, lenguaje multi) NO van aquí.
+export function construirQuery({
+  modo = 'trending',
+  fecha, // { preset, desde, hasta }
+  dias, // piso de "últimos N días" usado SOLO si no hay fecha explícita
+  minEstrellas,
+  maxEstrellas,
+  pushedDesde, // 'YYYY-MM-DD' → solo repos con push reciente (repos "vivos")
+  usuario, // login o nombre de organización (modo usuario)
+  lenguaje, // un lenguaje único a nivel query (opcional)
+} = {}) {
+  const partes = []
+
+  if (modo === 'usuario' && usuario) {
+    partes.push(`user:${usuario.trim()}`)
+  }
+
+  let rangoFecha = construirRangoFecha(fecha)
+  // Fallback: si no se eligió fecha pero sí un piso de días (trending), úsalo.
+  if (!rangoFecha && dias != null) {
+    const d = new Date()
+    d.setDate(d.getDate() - dias)
+    rangoFecha = `created:>=${fechaISO(d)}`
+  }
+  if (rangoFecha) partes.push(rangoFecha)
+
+  // Rango de estrellas: min, max o ambos.
+  if (minEstrellas != null && maxEstrellas != null) {
+    partes.push(`stars:${minEstrellas}..${maxEstrellas}`)
+  } else if (minEstrellas != null) {
+    partes.push(`stars:>=${minEstrellas}`)
+  } else if (maxEstrellas != null) {
+    partes.push(`stars:<=${maxEstrellas}`)
+  }
+
+  if (pushedDesde) partes.push(`pushed:>=${pushedDesde}`)
+  if (lenguaje) partes.push(`language:${lenguaje}`)
+
+  return partes.join(' ').trim()
+}
+
+// Busca repos según filtros de servidor (modos trending / usuario).
+// Salida normalizada → tubería reutilizable entre modos.
+export async function buscarRepos(filtros = {}) {
+  const q = construirQuery(filtros)
+  // Si no hay ningún qualifier, evitamos un search vacío (GitHub lo rechaza).
+  if (!q) return []
+  const sort = filtros.sort || 'stars'
+  const order = filtros.order || 'desc'
+  const path =
+    `/search/repositories?q=${encodeURIComponent(q)}` +
+    `&sort=${sort}&order=${order}&per_page=60`
+  const data = await ghFetch(path)
+  const items = data?.items ?? []
+  return items.map(normalizarRepo)
+}
+
+// Trae un repo puntual por owner/repo (modo repo / URL), NORMALIZADO para la
+// lista (distinto de getRepo, que devuelve el detalle crudo de la API).
+// Devuelve null si no existe (404).
+export async function buscarRepoNormalizado(owner, repo) {
+  try {
+    const data = await ghFetch(`/repos/${owner}/${repo}`)
+    return data ? normalizarRepo(data) : null
+  } catch (e) {
+    if (e.status === 404) return null
+    throw e
+  }
+}
+
+// Parsea una URL o "owner/repo" a { owner, repo }. Devuelve null si no calza.
+// Acepta: https://github.com/owner/repo, github.com/owner/repo (con o sin
+// /tree/..., .git, query o slash final) y el formato corto owner/repo.
+export function parsearRepoUrl(entrada) {
+  if (!entrada) return null
+  let s = entrada.trim()
+  s = s.replace(/^https?:\/\//i, '').replace(/^github\.com\//i, '')
+  s = s.replace(/\.git$/i, '')
+  const partes = s.split('/').filter(Boolean)
+  if (partes.length < 2) return null
+  const [owner, repo] = partes
+  if (!owner || !repo) return null
+  return { owner, repo }
 }
 
 // README decodificado (o '' si no existe).

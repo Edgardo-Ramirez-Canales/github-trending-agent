@@ -1,14 +1,21 @@
 import { useState, useMemo } from 'react'
 import { useAuth } from './hooks/useAuth.js'
 import { useTrendingRepos } from './hooks/useTrendingRepos.js'
+import { useFiltros } from './hooks/useFiltros.js'
+import { useDebouncedValue } from './hooks/useDebouncedValue.js'
 import { useContributions } from './hooks/useContributions.js'
 import { registrarRepoVisto } from './services/supabase.js'
 import LoginScreen from './components/LoginScreen.jsx'
 import TokenInput from './components/TokenInput.jsx'
 import AIProviderSelector from './components/AIProviderSelector.jsx'
 import PanelPerfil from './components/PanelPerfil.jsx'
-import RepoCard from './components/RepoCard.jsx'
 import RepoDetail from './components/RepoDetail.jsx'
+import BarraFiltros from './components/filtros/BarraFiltros.jsx'
+import SelectorModo from './components/filtros/SelectorModo.jsx'
+import BuscadorUsuario from './components/filtros/BuscadorUsuario.jsx'
+import BuscadorRepo from './components/filtros/BuscadorRepo.jsx'
+import FiltrosActivos from './components/filtros/FiltrosActivos.jsx'
+import ListaRepos from './components/ListaRepos.jsx'
 import NotificationBadge from './components/NotificationBadge.jsx'
 import NotificationPanel from './components/NotificationPanel.jsx'
 
@@ -99,14 +106,13 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
 // Sección de repos trending: filtros + lista de 15.
 // ----------------------------------------------------------------------------
 function TrendingSection() {
-  const { repos, cargando, error, recargar } = useTrendingRepos()
+  const { filtros, filtrosServidor, setFiltro, setFecha, setModo, toggleLenguaje, limpiar } =
+    useFiltros()
+  const { repos, cargando, error, recargar } = useTrendingRepos(filtrosServidor)
   const [seleccionado, setSeleccionado] = useState(null)
 
-  // Estado de filtros.
-  const [lenguajes, setLenguajes] = useState([]) // multi-select
-  const [minEstrellas, setMinEstrellas] = useState(100)
-  const [keyword, setKeyword] = useState('')
-  const [orden, setOrden] = useState('velocidad')
+  // Keyword diferida: no recalcula la lista en cada tecla.
+  const keywordDebounced = useDebouncedValue(filtros.keyword, 250)
 
   // Lista de lenguajes disponibles (para el filtro múltiple).
   const lenguajesDisponibles = useMemo(() => {
@@ -114,12 +120,21 @@ function TrendingSection() {
     return [...set].sort()
   }, [repos])
 
-  // Aplica filtros + orden y recorta a 15. "En llamas" siempre se fijan arriba.
+  // ¿Sugerir activar "incluir vistos"? Cuando el rango de fecha es amplio.
+  const sugerirVistos = useMemo(() => {
+    const rangosAmplios = ['6meses', '9meses', 'anioActual', 'ultimoAnio', 'personalizado']
+    return filtros.modo === 'trending' && rangosAmplios.includes(filtros.fecha.preset)
+  }, [filtros.modo, filtros.fecha.preset])
+
+  // Aplica filtros de CLIENTE + orden y recorta a 15. "En llamas" se fijan arriba.
   const visibles = useMemo(() => {
-    const kw = keyword.trim().toLowerCase()
+    const kw = keywordDebounced.trim().toLowerCase()
     let lista = repos.filter((r) => {
-      if (lenguajes.length && !lenguajes.includes(r.lenguaje)) return false
-      if (r.estrellas < minEstrellas) return false
+      if (filtros.lenguajes.length && !filtros.lenguajes.includes(r.lenguaje)) return false
+      if (r.estrellas < filtros.minEstrellas) return false
+      if (filtros.maxEstrellas != null && r.estrellas > filtros.maxEstrellas) return false
+      if (filtros.velocidadMin && r.velocidad < filtros.velocidadMin) return false
+      if (filtros.soloOriginales && r.esFork) return false
       if (kw) {
         const heno = `${r.nombre} ${r.descripcion} ${r.topics.join(' ')}`.toLowerCase()
         if (!heno.includes(kw)) return false
@@ -134,17 +149,20 @@ function TrendingSection() {
     }
     lista = [...lista].sort((a, b) => {
       if (a.enLlamas !== b.enLlamas) return a.enLlamas ? -1 : 1
-      return comparadores[orden](a, b)
+      return comparadores[filtros.orden](a, b)
     })
 
     return lista.slice(0, 15)
-  }, [repos, lenguajes, minEstrellas, keyword, orden])
-
-  function toggleLenguaje(l) {
-    setLenguajes((prev) =>
-      prev.includes(l) ? prev.filter((x) => x !== l) : [...prev, l],
-    )
-  }
+  }, [
+    repos,
+    filtros.lenguajes,
+    filtros.minEstrellas,
+    filtros.maxEstrellas,
+    filtros.velocidadMin,
+    filtros.soloOriginales,
+    keywordDebounced,
+    filtros.orden,
+  ])
 
   async function abrirRepo(repo) {
     setSeleccionado(repo)
@@ -156,11 +174,18 @@ function TrendingSection() {
     }
   }
 
+  const titulos = {
+    trending: 'Repos trending',
+    usuario: 'Repos por usuario',
+    repo: 'Buscar repo',
+  }
+  const titulo = titulos[filtros.modo] || 'Repos'
+
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a8f98]">
-          Repos trending
+          {titulo}
           {!cargando && (
             <span className="ml-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-xs font-medium normal-case tracking-normal text-[#c4c7cc]">
               {visibles.length} mostrados
@@ -176,101 +201,53 @@ function TrendingSection() {
         </button>
       </div>
 
-      {/* Filtros */}
-      <div className="mt-4 grid gap-4 rounded-lg border border-white/[0.08] bg-[#0e0f11] p-4 shadow-2xl shadow-black/20 md:grid-cols-2">
-        <div>
-          <label className="text-xs font-medium text-[#8a8f98]">
-            Estrellas mínimas: {minEstrellas.toLocaleString('es')}
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="20000"
-            step="100"
-            value={minEstrellas}
-            onChange={(e) => setMinEstrellas(Number(e.target.value))}
-            className="mt-2 w-full ctrl-range"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="kw" className="text-xs font-medium text-[#8a8f98]">
-            Keyword / tópico
-          </label>
-          <input
-            id="kw"
-            type="text"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="ej: cli, ai, rust…"
-            className="mt-1 w-full rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] placeholder:text-[#4a4d54] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
-          />
-        </div>
-
-        <div className="md:col-span-2">
-          <span className="text-xs font-medium text-[#8a8f98]">Lenguaje</span>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {lenguajesDisponibles.length === 0 && (
-              <span className="text-xs text-[#62666d]">—</span>
-            )}
-            {lenguajesDisponibles.map((l) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => toggleLenguaje(l)}
-                className={
-                  'rounded-md px-2.5 py-1 text-xs font-medium transition ' +
-                  (lenguajes.includes(l)
-                    ? 'bg-[#007ACC]/18 text-sky-100 ring-1 ring-[#007ACC]/50'
-                    : 'bg-white/[0.04] text-[#c4c7cc] ring-1 ring-white/[0.08] hover:bg-white/[0.07]')
-                }
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="orden" className="text-xs font-medium text-[#8a8f98]">
-            Ordenar por
-          </label>
-          <select
-            id="orden"
-            value={orden}
-            onChange={(e) => setOrden(e.target.value)}
-            className="mt-1 w-full rounded-md border border-white/[0.08] bg-[#0a0b0d] px-3 py-2 text-sm text-[#f7f8f8] outline-none transition focus:border-[#007ACC]/70 focus:ring-2 focus:ring-[#007ACC]/25"
-          >
-            <option value="velocidad">Velocidad de crecimiento</option>
-            <option value="estrellas">Total de estrellas</option>
-            <option value="fecha">Fecha de creación</option>
-          </select>
-        </div>
+      <div className="mt-4">
+        <SelectorModo modo={filtros.modo} onModo={setModo} />
       </div>
 
-      {/* Estados */}
-      {cargando && (
-        <p className="mt-6 text-center text-[#8a8f98]">Buscando repos…</p>
+      {filtros.modo === 'usuario' && (
+        <BuscadorUsuario
+          filtros={filtros}
+          setFiltro={setFiltro}
+          toggleLenguaje={toggleLenguaje}
+          lenguajesDisponibles={lenguajesDisponibles}
+          usuarioActivo={filtros.usuario}
+          totalRepos={visibles.length}
+          avatar={repos[0]?.avatar}
+        />
       )}
-      {error && (
-        <div className="mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-center text-sm text-red-300">
-          {error}
-        </div>
+      {filtros.modo === 'repo' && (
+        <BuscadorRepo
+          urlActiva={filtros.urlRepo}
+          onBuscar={(v) => setFiltro('urlRepo', v)}
+        />
+      )}
+      {filtros.modo === 'trending' && (
+        <BarraFiltros
+          filtros={filtros}
+          setFiltro={setFiltro}
+          setFecha={setFecha}
+          toggleLenguaje={toggleLenguaje}
+          lenguajesDisponibles={lenguajesDisponibles}
+          sugerirVistos={sugerirVistos}
+        />
       )}
 
-      {/* Lista */}
-      {!cargando && !error && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visibles.map((r) => (
-            <RepoCard key={r.id} repo={r} onSelect={abrirRepo} />
-          ))}
-          {visibles.length === 0 && (
-            <p className="col-span-full text-center text-[#62666d]">
-              Ningún repo coincide con los filtros.
-            </p>
-          )}
-        </div>
-      )}
+      <FiltrosActivos
+        filtros={filtros}
+        setFiltro={setFiltro}
+        setFecha={setFecha}
+        toggleLenguaje={toggleLenguaje}
+        limpiar={limpiar}
+      />
+
+      <ListaRepos
+        repos={visibles}
+        cargando={cargando}
+        error={error}
+        onSelect={abrirRepo}
+        modo={filtros.modo}
+      />
 
       {/* Detalle + análisis con IA */}
       {seleccionado && (
