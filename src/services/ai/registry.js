@@ -14,8 +14,9 @@
 import { analizar as analizarOpenAI } from './openai.js'
 import { analizar as analizarGemini } from './gemini.js'
 import { analizar as analizarClaude } from './claude.js'
-import { analizar as analizarDeepSeek } from './deepseek.js'
 import { analizar as analizarMiniMax } from './minimax.js'
+import { analizar as analizarOpenRouter } from './openrouter.js'
+import { analizar as analizarGroq } from './groq.js'
 
 export const PROVEEDORES = [
   {
@@ -62,19 +63,6 @@ export const PROVEEDORES = [
     ],
   },
   {
-    id: 'deepseek',
-    nombre: 'DeepSeek',
-    placeholder: 'sk-…',
-    docsUrl: 'https://platform.deepseek.com/api_keys',
-    color: '#4d6bfe',
-    analizar: analizarDeepSeek,
-    modeloDefault: 'deepseek-chat',
-    modelos: [
-      { id: 'deepseek-chat', etiqueta: 'DeepSeek Chat' },
-      { id: 'deepseek-reasoner', etiqueta: 'DeepSeek Reasoner' },
-    ],
-  },
-  {
     id: 'minimax',
     nombre: 'MiniMax',
     placeholder: 'eyJ… (JWT)',
@@ -85,6 +73,37 @@ export const PROVEEDORES = [
     modelos: [
       { id: 'MiniMax-Text-01', etiqueta: 'MiniMax Text 01' },
       { id: 'abab6.5s-chat', etiqueta: 'abab6.5s Chat' },
+    ],
+  },
+  {
+    id: 'openrouter',
+    nombre: 'OpenRouter',
+    placeholder: 'sk-or-…',
+    docsUrl: 'https://openrouter.ai/keys',
+    color: '#6467f2',
+    analizar: analizarOpenRouter,
+    modeloDefault: 'auto-free',
+    modelos: [
+      { id: 'auto-free', etiqueta: 'Auto (mejor disponible / free)' },
+      { id: 'meta-llama/llama-3.3-70b-instruct:free', etiqueta: 'Llama 3.3 70B (free)' },
+      { id: 'qwen/qwen3-next-80b-a3b-instruct:free', etiqueta: 'Qwen3 Next 80B (free)' },
+      { id: 'openai/gpt-oss-120b:free', etiqueta: 'GPT-OSS 120B (free)' },
+      { id: 'nvidia/nemotron-3-super-120b-a12b:free', etiqueta: 'Nemotron 3 Super 120B (free)' },
+    ],
+  },
+  {
+    id: 'groq',
+    nombre: 'Groq',
+    placeholder: 'gsk_…',
+    docsUrl: 'https://console.groq.com/keys',
+    color: '#f55036',
+    analizar: analizarGroq,
+    modeloDefault: 'llama-3.3-70b-versatile',
+    modelos: [
+      { id: 'llama-3.3-70b-versatile', etiqueta: 'Llama 3.3 70B (free)' },
+      { id: 'llama-3.1-8b-instant', etiqueta: 'Llama 3.1 8B Instant (free)' },
+      { id: 'openai/gpt-oss-120b', etiqueta: 'GPT-OSS 120B (free)' },
+      { id: 'openai/gpt-oss-20b', etiqueta: 'GPT-OSS 20B (free)' },
     ],
   },
 ]

@@ -1,9 +1,11 @@
-// Proveedor DeepSeek. Firma común: analizar(prompt, apiKey, modelo) → objeto JSON.
-// API compatible con OpenAI (chat/completions + response_format json_object),
-// por eso es casi idéntico a openai.js, solo cambia el endpoint.
+// Proveedor Groq. Firma común: analizar(prompt, apiKey, modelo) → objeto JSON.
+// API compatible con OpenAI (chat/completions). Free tier sin tarjeta y CORS abierto
+// (access-control-allow-origin: *) → funciona directo desde el navegador.
+// Pide JSON-mode nativo; aun así parseamos con extractor tolerante por seguridad.
+import { extraerJSON } from './_json.js'
 
-const ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
-const MODELO_DEFAULT = 'deepseek-chat'
+const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+const MODELO_DEFAULT = 'llama-3.3-70b-versatile'
 
 export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
   const res = await fetch(ENDPOINT, {
@@ -22,13 +24,13 @@ export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
 
   if (!res.ok) {
     const detalle = await res.text().catch(() => '')
-    throw new Error(`DeepSeek (${res.status}): ${detalle.slice(0, 200)}`)
+    throw new Error(`Groq (${res.status}): ${detalle.slice(0, 200)}`)
   }
 
   const data = await res.json()
   const contenido = data?.choices?.[0]?.message?.content
-  if (!contenido) throw new Error('DeepSeek: respuesta vacía')
+  if (!contenido) throw new Error('Groq: respuesta vacía')
 
   // Puede lanzar SyntaxError si el JSON viene mal formado → index.js reintenta.
-  return JSON.parse(contenido)
+  return extraerJSON(contenido)
 }

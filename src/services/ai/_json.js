@@ -8,8 +8,9 @@ export function extraerJSON(texto) {
 
   let limpio = texto.trim()
 
-  // Quita vallas de código markdown: ```json … ``` o ``` … ```
-  const fence = limpio.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  // Solo honra un fence ```json … ```; un fence de otro lenguaje (```bash, etc.)
+  // NO debe secuestrar la extracción → lo ignoramos y caemos al corte por llaves.
+  const fence = limpio.match(/```json\s*([\s\S]*?)```/i)
   if (fence) limpio = fence[1].trim()
 
   // Recorta al primer objeto balanceado por si hay texto antes/después.
