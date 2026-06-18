@@ -71,6 +71,25 @@ export function IconAlert({ className }) {
   )
 }
 
+export function IconExternalLink({ className }) {
+  return (
+    <Svg className={className}>
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </Svg>
+  )
+}
+
+export function IconClock({ className }) {
+  return (
+    <Svg className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </Svg>
+  )
+}
+
 export function IconFlame({ className }) {
   // Versión rellena: queda mejor en el chip "en llamas".
   return (

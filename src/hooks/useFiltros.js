@@ -115,29 +115,31 @@ export function useFiltros() {
     }))
   }, [])
 
-  // Cambiar de modo limpiando lo específico del modo anterior.
-  // Al entrar a 'usuario' reseteamos los filtros heredados de trending
-  // (fecha → created:>=, lenguaje → language:, pushedDesde → pushed:>=, velocidad
-  // → ★/día, soloOriginales y orden visual): en este modo queremos ver TODOS los
-  // repos del usuario sin que esos filtros acoten la búsqueda y den "0 repos".
+  // Cambiar de modo = PIZARRA LIMPIA para el modo destino.
+  //
+  // Cada modo aplica un subconjunto distinto de filtros (trending: todos;
+  // usuario: lenguajes/originales/keyword; repo: ninguno). Parchear campo por
+  // campo dejaba filtros colgados que se veían como chips pero no filtraban en
+  // el modo nuevo. Para evitarlo, reseteamos TODO a DEFAULTS y conservamos solo
+  // los textos que tecleó el usuario (login y URL) para no perderlos al alternar.
+  //
+  // En usuario y repo, fecha/pushedDesde son inertes (listarReposUsuario y
+  // buscarRepoNormalizado los ignoran): se vacían para no mostrar chips falsos.
   const setModo = useCallback((modo) => {
     setFiltrosState((prev) => {
-      if (modo === 'usuario') {
-        return {
-          ...prev,
-          modo,
-          fecha: { ...DEFAULTS.fecha },
-          lenguaje: DEFAULTS.lenguaje,
-          lenguajes: [...DEFAULTS.lenguajes],
-          pushedDesde: DEFAULTS.pushedDesde,
-          velocidadMin: DEFAULTS.velocidadMin,
-          soloOriginales: DEFAULTS.soloOriginales,
-          orden: DEFAULTS.orden,
-          ordenDir: DEFAULTS.ordenDir,
-          keyword: DEFAULTS.keyword,
-        }
+      if (modo === prev.modo) return prev // reclick del modo activo: no tocar nada
+
+      const base = {
+        ...DEFAULTS,
+        modo,
+        usuario: prev.usuario,
+        urlRepo: prev.urlRepo,
       }
-      return { ...prev, modo }
+      if (modo !== 'trending') {
+        base.fecha = { preset: '', desde: '', hasta: '' }
+        base.pushedDesde = ''
+      }
+      return base
     })
   }, [])
 
