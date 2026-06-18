@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from './hooks/useAuth.js'
 import { useTrendingRepos } from './hooks/useTrendingRepos.js'
 import { useFiltros } from './hooks/useFiltros.js'
@@ -14,6 +14,7 @@ import SelectorModo from './components/filtros/SelectorModo.jsx'
 import BuscadorUsuario from './components/filtros/BuscadorUsuario.jsx'
 import BuscadorRepo from './components/filtros/BuscadorRepo.jsx'
 import FiltrosActivos from './components/filtros/FiltrosActivos.jsx'
+import Paginacion from './components/filtros/Paginacion.jsx'
 import ListaRepos from './components/ListaRepos.jsx'
 import NotificationBadge from './components/NotificationBadge.jsx'
 import NotificationPanel from './components/NotificationPanel.jsx'
@@ -161,8 +162,10 @@ function TrendingSection() {
       return factor * comparadores[filtros.orden](a, b)
     })
 
-    // En modo usuario mostramos TODOS los repos; en trending recortamos a 15.
-    return esUsuario ? lista : lista.slice(0, 15)
+    // Devolvemos la lista filtrada+ordenada COMPLETA. El recorte por página se
+    // hace después (paginación), no acá: así los filtros siguen operando sobre
+    // todo el conjunto y la paginación solo decide qué tramo se ve.
+    return lista
   }, [
     repos,
     filtros.modo,
@@ -175,6 +178,20 @@ function TrendingSection() {
     filtros.orden,
     filtros.ordenDir,
   ])
+
+  // Paginación cliente: recorta `visibles` (ya filtrado y ordenado) en páginas de
+  // 6. No toca los filtros; solo decide qué tramo se muestra. Repo queda con 1
+  // resultado → 1 página → Paginacion se auto-oculta.
+  const PAGE_SIZE = 6
+  const [pagina, setPagina] = useState(1)
+  // Cualquier cambio en el conjunto filtrado (filtros, orden, modo, recarga)
+  // vuelve a la página 1 para no quedar fuera de rango.
+  useEffect(() => {
+    setPagina(1)
+  }, [visibles])
+  const totalPaginas = Math.ceil(visibles.length / PAGE_SIZE) || 1
+  const inicio = (pagina - 1) * PAGE_SIZE
+  const paginados = visibles.slice(inicio, inicio + PAGE_SIZE)
 
   async function abrirRepo(repo) {
     setSeleccionado(repo)
@@ -261,12 +278,16 @@ function TrendingSection() {
       />
 
       <ListaRepos
-        repos={visibles}
+        repos={paginados}
         cargando={cargando}
         error={error}
         onSelect={abrirRepo}
         modo={filtros.modo}
       />
+
+      {!cargando && !error && (
+        <Paginacion pagina={pagina} totalPaginas={totalPaginas} onPagina={setPagina} />
+      )}
 
       {/* Detalle + análisis con IA */}
       {seleccionado && (
