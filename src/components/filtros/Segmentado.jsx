@@ -27,5 +27,11 @@ export default function Segmentado({ etiqueta, value, onChange, opciones }) {
 export const OPCIONES_ORDEN = [
   { value: 'velocidad', label: 'Velocidad' },
   { value: 'estrellas', label: 'Estrellas' },
-  { value: 'fecha', label: 'Fecha' },
+  { value: 'fecha', label: 'Fecha de creación' },
+]
+
+// Dirección del orden (solo modo usuario).
+export const OPCIONES_DIRECCION = [
+  { value: 'desc', label: '↓ Desc' },
+  { value: 'asc', label: '↑ Asc' },
 ]

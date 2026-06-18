@@ -125,34 +125,55 @@ function TrendingSection() {
   // Aplica filtros de CLIENTE + orden y recorta a 15. "En llamas" se fijan arriba.
   // (keyword ya no filtra acá: pasó a búsqueda real en GitHub vía filtrosServidor.)
   const visibles = useMemo(() => {
+    // Modo repo: búsqueda deliberada de UN repo concreto. No aplicamos ningún
+    // filtro de cliente (estrellas, velocidad, lenguaje…); si lo pediste por
+    // nombre, querés verlo siempre.
+    if (filtros.modo === 'repo') return repos
+
+    // En modo usuario la UI no expone los controles de estrellas ni velocidad,
+    // así que no se aplican (queremos ver TODOS los repos del usuario). Solo
+    // recortan lenguaje y "solo originales", que sí tienen control en pantalla.
+    const esUsuario = filtros.modo === 'usuario'
+    // En modo usuario, la palabra clave filtra EN CLIENTE sobre la lista ya
+    // traída (nombre + descripción). En trending ya filtra vía servidor.
+    const kw = esUsuario ? filtros.keyword.trim().toLowerCase() : ''
     let lista = repos.filter((r) => {
       if (filtros.lenguajes.length && !filtros.lenguajes.includes(r.lenguaje)) return false
-      if (r.estrellas < filtros.minEstrellas) return false
-      if (filtros.maxEstrellas != null && r.estrellas > filtros.maxEstrellas) return false
-      if (filtros.velocidadMin && r.velocidad < filtros.velocidadMin) return false
+      if (!esUsuario && r.estrellas < filtros.minEstrellas) return false
+      if (!esUsuario && filtros.maxEstrellas != null && r.estrellas > filtros.maxEstrellas) return false
+      if (!esUsuario && filtros.velocidadMin && r.velocidad < filtros.velocidadMin) return false
       if (filtros.soloOriginales && r.esFork) return false
+      if (kw && !`${r.nombre} ${r.descripcion}`.toLowerCase().includes(kw)) return false
       return true
     })
 
+    // Comparadores en orden descendente base; la dirección se aplica con un
+    // factor (solo en modo usuario; trending siempre desc).
     const comparadores = {
       velocidad: (a, b) => b.velocidad - a.velocidad,
       estrellas: (a, b) => b.estrellas - a.estrellas,
       fecha: (a, b) => new Date(b.creadoEn) - new Date(a.creadoEn),
     }
+    const factor = esUsuario && filtros.ordenDir === 'asc' ? -1 : 1
     lista = [...lista].sort((a, b) => {
-      if (a.enLlamas !== b.enLlamas) return a.enLlamas ? -1 : 1
-      return comparadores[filtros.orden](a, b)
+      // El fijado de "en llamas" solo tiene sentido en trending.
+      if (!esUsuario && a.enLlamas !== b.enLlamas) return a.enLlamas ? -1 : 1
+      return factor * comparadores[filtros.orden](a, b)
     })
 
-    return lista.slice(0, 15)
+    // En modo usuario mostramos TODOS los repos; en trending recortamos a 15.
+    return esUsuario ? lista : lista.slice(0, 15)
   }, [
     repos,
+    filtros.modo,
+    filtros.keyword,
     filtros.lenguajes,
     filtros.minEstrellas,
     filtros.maxEstrellas,
     filtros.velocidadMin,
     filtros.soloOriginales,
     filtros.orden,
+    filtros.ordenDir,
   ])
 
   async function abrirRepo(repo) {
@@ -165,10 +186,17 @@ function TrendingSection() {
     }
   }
 
+  // Cambiar de modo: además de cambiar los filtros, cerramos el detalle/análisis
+  // abierto (es del modo anterior) para no arrastrarlo al modo nuevo.
+  function cambiarModo(m) {
+    setModo(m)
+    setSeleccionado(null)
+  }
+
   const titulos = {
-    trending: 'Repos trending',
-    usuario: 'Repos por usuario',
-    repo: 'Buscar repo',
+    trending: 'Descubrir repos',
+    usuario: 'Repos por autor',
+    repo: 'Repo directo',
   }
   const titulo = titulos[filtros.modo] || 'Repos'
 
@@ -193,7 +221,7 @@ function TrendingSection() {
       </div>
 
       <div className="mt-4">
-        <SelectorModo modo={filtros.modo} onModo={setModo} />
+        <SelectorModo modo={filtros.modo} onModo={cambiarModo} />
       </div>
 
       {filtros.modo === 'usuario' && (

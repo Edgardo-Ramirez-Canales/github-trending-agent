@@ -1,8 +1,8 @@
 // Pestañas para alternar entre los modos de búsqueda.
 const MODOS = [
-  { id: 'trending', label: 'Trending' },
-  { id: 'usuario', label: 'Por usuario' },
-  { id: 'repo', label: 'Buscar repo' },
+  { id: 'trending', label: 'Descubrir' },
+  { id: 'usuario', label: 'Por autor' },
+  { id: 'repo', label: 'Repo directo' },
 ]
 
 export default function SelectorModo({ modo, onModo }) {

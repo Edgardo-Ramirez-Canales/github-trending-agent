@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import FiltroLenguajes from './FiltroLenguajes.jsx'
-import Segmentado, { OPCIONES_ORDEN } from './Segmentado.jsx'
+import { OPCIONES_ORDEN, OPCIONES_DIRECCION } from './Segmentado.jsx'
 import { LABEL, INPUT } from './estilos.js'
 
 // Panel del modo "Por usuario". El input de usuario es un filtro de SERVIDOR,
@@ -61,30 +61,86 @@ export default function BuscadorUsuario({
         </div>
       )}
 
-      <div className="flex flex-wrap items-end gap-4">
-        <label className={'flex cursor-pointer items-center gap-2 ' + LABEL}>
-          <input
-            type="checkbox"
-            checked={filtros.soloOriginales}
-            onChange={(e) => setFiltro('soloOriginales', e.target.checked)}
-            className="h-4 w-4 rounded border-white/20 bg-[#0a0b0d] accent-[#007ACC]"
+      {/* Controles para refinar la lista ya traída (solo con usuario activo). */}
+      {usuarioActivo && (
+        <>
+          {/* Fila 1: filtrar por palabra + "solo originales" al lado. */}
+          <div className="flex flex-wrap items-end gap-4">
+            <label htmlFor="filtro-palabra" className={'flex-1 ' + LABEL}>
+              Filtrar por palabra (nombre o descripción)
+              <input
+                id="filtro-palabra"
+                type="text"
+                value={filtros.keyword}
+                onChange={(e) => setFiltro('keyword', e.target.value)}
+                placeholder="ej: api, dashboard, cli…"
+                className={'mt-1 ' + INPUT}
+              />
+            </label>
+            <label className={'flex cursor-pointer items-center gap-2 pb-2 ' + LABEL}>
+              <input
+                type="checkbox"
+                checked={filtros.soloOriginales}
+                onChange={(e) => setFiltro('soloOriginales', e.target.checked)}
+                className="h-4 w-4 rounded border-white/20 bg-[#0a0b0d] accent-[#007ACC]"
+              />
+              Solo originales (ocultar forks)
+            </label>
+          </div>
+
+          {/* Fila 2: lenguajes. */}
+          <FiltroLenguajes
+            disponibles={lenguajesDisponibles}
+            seleccionados={filtros.lenguajes}
+            onToggle={toggleLenguaje}
           />
-          Solo originales (ocultar forks)
-        </label>
 
-        <Segmentado
-          etiqueta="Ordenar por"
-          value={filtros.orden}
-          onChange={(v) => setFiltro('orden', v)}
-          opciones={OPCIONES_ORDEN}
-        />
-      </div>
+          {/* Fila 3: criterio de orden (checkbox de selección única) +
+              dirección (radio). */}
+          <div className="flex flex-wrap gap-x-10 gap-y-4">
+            <fieldset>
+              <legend className={LABEL}>Ordenar por</legend>
+              <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+                {OPCIONES_ORDEN.map((o) => (
+                  <label
+                    key={o.value}
+                    className="flex cursor-pointer items-center gap-2 text-sm text-[#e1e3e6]"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={filtros.orden === o.value}
+                      onChange={() => setFiltro('orden', o.value)}
+                      className="h-4 w-4 rounded border-white/20 bg-[#0a0b0d] accent-[#007ACC]"
+                    />
+                    {o.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
-      <FiltroLenguajes
-        disponibles={lenguajesDisponibles}
-        seleccionados={filtros.lenguajes}
-        onToggle={toggleLenguaje}
-      />
+            <fieldset>
+              <legend className={LABEL}>Dirección</legend>
+              <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+                {OPCIONES_DIRECCION.map((o) => (
+                  <label
+                    key={o.value}
+                    className="flex cursor-pointer items-center gap-2 text-sm text-[#e1e3e6]"
+                  >
+                    <input
+                      type="radio"
+                      name="ordenDir"
+                      checked={filtros.ordenDir === o.value}
+                      onChange={() => setFiltro('ordenDir', o.value)}
+                      className="h-4 w-4 border-white/20 bg-[#0a0b0d] accent-[#007ACC]"
+                    />
+                    {o.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+        </>
+      )}
     </div>
   )
 }

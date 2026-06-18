@@ -99,7 +99,9 @@ function normalizarRepo(r) {
     url: r.html_url,
     avatar: r.owner?.avatar_url,
     esFork: Boolean(r.fork),
+    privado: Boolean(r.private),
     creadoEn: r.created_at,
+    actualizadoEn: r.pushed_at || r.updated_at, // último push de código (actividad real)
     diasVida,
     // Velocidad de crecimiento aproximada: estrellas por día desde su creación.
     velocidad: Math.round((r.stargazers_count / diasVida) * 10) / 10,
@@ -220,6 +222,47 @@ export async function buscarRepos(filtros = {}) {
   const data = await ghFetch(path)
   const items = data?.items ?? []
   return items.map(normalizarRepo)
+}
+
+// Lista TODOS los repos de un usuario u organización paginando el endpoint REST
+// (no el Search API): así no topamos con su límite de resultados ni con piso de
+// estrellas, y traemos repos sin estrellas. El filtrado por palabra/lenguaje y el
+// orden se hacen luego en cliente sobre esta lista.
+//
+// Si el usuario buscado es la propia cuenta autenticada (y hay token con scope
+// `repo`), usamos `/user/repos?visibility=all`, que incluye los repos PRIVADOS.
+// Para cualquier otro usuario u org usamos `/users/{login}/repos` (solo públicos).
+export async function listarReposUsuario(usuario) {
+  const login = (usuario || '').trim()
+  if (!login) return []
+
+  // ¿Es mi propia cuenta? Solo si hay token y el login coincide.
+  let esCuentaPropia = false
+  if (getGithubToken()) {
+    try {
+      const yo = await getUsuarioAutenticado()
+      esCuentaPropia =
+        yo?.login && yo.login.toLowerCase() === login.toLowerCase()
+    } catch {
+      esCuentaPropia = false // sin permiso para /user → tratamos como ajeno
+    }
+  }
+
+  const PER_PAGE = 100
+  const MAX_PAGINAS = 10 // tope de seguridad: hasta 1000 repos
+  const acumulado = []
+  for (let page = 1; page <= MAX_PAGINAS; page++) {
+    const path = esCuentaPropia
+      ? `/user/repos?visibility=all&affiliation=owner` +
+        `&per_page=${PER_PAGE}&page=${page}&sort=updated&direction=desc`
+      : `/users/${encodeURIComponent(login)}/repos` +
+        `?per_page=${PER_PAGE}&page=${page}&sort=updated&direction=desc`
+    const data = await ghFetch(path)
+    const items = Array.isArray(data) ? data : []
+    acumulado.push(...items)
+    if (items.length < PER_PAGE) break // última página
+  }
+  return acumulado.map(normalizarRepo)
 }
 
 // Trae un repo puntual por owner/repo (modo repo / URL), NORMALIZADO para la

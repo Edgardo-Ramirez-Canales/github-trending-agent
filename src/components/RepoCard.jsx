@@ -21,6 +21,11 @@ export default function RepoCard({ repo, onSelect }) {
           <span className="truncate text-sm font-semibold text-[#f7f8f8] group-hover:text-white">
             {repo.nombre}
           </span>
+          {repo.privado && (
+            <span className="shrink-0 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300 ring-1 ring-amber-500/25">
+              Privado
+            </span>
+          )}
         </div>
         {repo.enLlamas && (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-orange-500/15 px-2 py-0.5 text-xs font-semibold text-orange-300 ring-1 ring-orange-500/25">

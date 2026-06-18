@@ -2,11 +2,13 @@ import { supabase } from './supabase.js'
 import { setGithubTokenFromOAuth } from '../utils/storage.js'
 
 // Servicio de autenticación con GitHub OAuth (Supabase Auth).
-// El login pide scope `public_repo` → GitHub devuelve un provider_token con
-// permiso para fork + commit + PR en repos públicos. Ese token se captura UNA
-// vez en el evento SIGNED_IN (Supabase NO lo persiste) y se guarda en localStorage.
+// El login pide scope `repo` → GitHub devuelve un provider_token con permiso
+// para fork + commit + PR y para LISTAR repos privados del usuario (modo usuario).
+// Ese token se captura UNA vez en el evento SIGNED_IN (Supabase NO lo persiste)
+// y se guarda en localStorage. Si ya había sesión con el scope viejo
+// (`public_repo`), hace falta cerrar sesión y volver a entrar para ampliarlo.
 
-const GITHUB_SCOPES = 'public_repo'
+const GITHUB_SCOPES = 'repo'
 
 // Inicia el flujo OAuth con GitHub. Redirige fuera de la app y vuelve al callback.
 export async function loginConGithub() {

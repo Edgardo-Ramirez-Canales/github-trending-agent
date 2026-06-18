@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   buscarRepos,
   buscarRepoNormalizado,
+  listarReposUsuario,
   parsearRepoUrl,
 } from '../services/github.js'
 import { getReposVistosRecientes } from '../services/supabase.js'
@@ -55,8 +56,10 @@ export function useTrendingRepos(filtros = {}) {
     }
     if (modo === 'usuario') {
       if (!usuario.trim()) return []
-      // Sin piso de estrellas: queremos ver todos los repos del usuario.
-      return buscarRepos({ modo: 'usuario', usuario, fecha, pushedDesde, lenguaje, sort, order, busqueda })
+      // Traemos TODOS los repos del usuario vía REST (paginado, sin piso de
+      // estrellas ni tope del Search API). El filtrado por palabra/lenguaje y el
+      // orden se aplican en cliente (App.jsx) sobre la lista completa.
+      return listarReposUsuario(usuario)
     }
     // 'trending': motor flexible con fecha (preset/personalizado) y, si no se
     // eligió fecha, fallback a "últimos `dias`". Piso de estrellas del servidor

@@ -21,12 +21,23 @@ import { useDebouncedValue } from './useDebouncedValue.js'
 // Persistencia: se guarda en localStorage (gta_filtros) salvo los campos
 // transitorios de búsqueda directa (urlRepo) que no tiene sentido recordar.
 
+// Fecha ISO de "hace N días" (para el default de actividad reciente).
+function haceDias(n) {
+  const d = new Date()
+  d.setDate(d.getDate() - n)
+  return d.toISOString().slice(0, 10)
+}
+
 const DEFAULTS = {
   modo: 'trending', // 'trending' | 'usuario' | 'repo'
 
   // --- servidor ---
-  fecha: { preset: '', desde: '', hasta: '' },
-  pushedDesde: '',
+  // Proxy de "tendencia a crecer" (barato): ventana corta + actividad reciente.
+  //   created:>= mes actual  → solo repos JÓVENES (descarta viejos-famosos)
+  //   pushed:>= últimos 30d   → solo repos VIVOS (descarta abandonados)
+  // Combinado con orden por velocidad (★/día) aproxima el momentum sin snapshots.
+  fecha: { preset: 'mesActual', desde: '', hasta: '' },
+  pushedDesde: haceDias(30),
   usuario: '',
   urlRepo: '',
   lenguaje: '', // lenguaje único a nivel query (opcional)
@@ -42,19 +53,27 @@ const DEFAULTS = {
   lenguajes: [], // multi-select que filtra en pantalla
   keyword: '',
   orden: 'velocidad', // orden visual: 'velocidad' | 'estrellas' | 'fecha'
+  ordenDir: 'desc', // dirección del orden visual: 'desc' | 'asc' (solo modo usuario)
 }
 
 // Campos transitorios que no se persisten.
-const NO_PERSISTIR = ['urlRepo']
+// pushedDesde es una fecha ABSOLUTA: si se persistiera, se congelaría y al día
+// siguiente desincronizaría el radio "Actualizado". Se recalcula fresco cada
+// sesión desde DEFAULTS (el usuario igual puede cambiarlo en la barra).
+const NO_PERSISTIR = ['urlRepo', 'pushedDesde']
 
 function cargarIniciales() {
   const guardado = getFiltros()
   if (!guardado || typeof guardado !== 'object') return { ...DEFAULTS }
+  // Los campos transitorios nunca se toman de localStorage (pushedDesde guardado
+  // viejo pisaría el default fresco). Se descartan antes del merge.
+  const limpio = { ...guardado }
+  for (const k of NO_PERSISTIR) delete limpio[k]
   // Merge defensivo: si en el futuro se agregan campos, los faltantes toman default.
   return {
     ...DEFAULTS,
-    ...guardado,
-    fecha: { ...DEFAULTS.fecha, ...(guardado.fecha || {}) },
+    ...limpio,
+    fecha: { ...DEFAULTS.fecha, ...(limpio.fecha || {}) },
   }
 }
 
@@ -97,8 +116,29 @@ export function useFiltros() {
   }, [])
 
   // Cambiar de modo limpiando lo específico del modo anterior.
+  // Al entrar a 'usuario' reseteamos los filtros heredados de trending
+  // (fecha → created:>=, lenguaje → language:, pushedDesde → pushed:>=, velocidad
+  // → ★/día, soloOriginales y orden visual): en este modo queremos ver TODOS los
+  // repos del usuario sin que esos filtros acoten la búsqueda y den "0 repos".
   const setModo = useCallback((modo) => {
-    setFiltrosState((prev) => ({ ...prev, modo }))
+    setFiltrosState((prev) => {
+      if (modo === 'usuario') {
+        return {
+          ...prev,
+          modo,
+          fecha: { ...DEFAULTS.fecha },
+          lenguaje: DEFAULTS.lenguaje,
+          lenguajes: [...DEFAULTS.lenguajes],
+          pushedDesde: DEFAULTS.pushedDesde,
+          velocidadMin: DEFAULTS.velocidadMin,
+          soloOriginales: DEFAULTS.soloOriginales,
+          orden: DEFAULTS.orden,
+          ordenDir: DEFAULTS.ordenDir,
+          keyword: DEFAULTS.keyword,
+        }
+      }
+      return { ...prev, modo }
+    })
   }, [])
 
   // Restablecer filtros a defaults conservando el modo activo.
@@ -119,7 +159,9 @@ export function useFiltros() {
       sort: filtros.sort,
       order: filtros.order,
       incluirVistos: filtros.incluirVistos,
-      busqueda: busqueda.trim(),
+      // La búsqueda de servidor solo aplica en trending. En modo usuario la
+      // palabra clave filtra en cliente, así que no debe disparar re-fetch.
+      busqueda: filtros.modo === 'trending' ? busqueda.trim() : '',
     }),
     [
       filtros.modo,
