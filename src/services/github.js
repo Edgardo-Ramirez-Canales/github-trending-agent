@@ -436,6 +436,31 @@ export async function cerrarPR(owner, repo, numero) {
   })
 }
 
+// Reabre un PR previamente cerrado (deshacer cancelación). GitHub lo permite
+// mientras no esté fusionado y la rama head siga existiendo.
+export async function reabrirPR(owner, repo, numero) {
+  return ghFetch(`/repos/${owner}/${repo}/pulls/${numero}`, {
+    method: 'PATCH',
+    body: { state: 'open' },
+  })
+}
+
+// Cierra un issue (cancelar Modo B). state_reason 'not_planned' = descartado.
+export async function cerrarIssue(owner, repo, numero) {
+  return ghFetch(`/repos/${owner}/${repo}/issues/${numero}`, {
+    method: 'PATCH',
+    body: { state: 'closed', state_reason: 'not_planned' },
+  })
+}
+
+// Reabre un issue cerrado (deshacer cancelación).
+export async function reabrirIssue(owner, repo, numero) {
+  return ghFetch(`/repos/${owner}/${repo}/issues/${numero}`, {
+    method: 'PATCH',
+    body: { state: 'open', state_reason: 'reopened' },
+  })
+}
+
 // Estado de un issue (para polling del Modo B).
 export async function getEstadoIssue(owner, repo, numero) {
   const data = await ghFetch(`/repos/${owner}/${repo}/issues/${numero}`)

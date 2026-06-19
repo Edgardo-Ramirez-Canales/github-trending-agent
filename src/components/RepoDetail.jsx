@@ -7,7 +7,7 @@ import ModeRunner from './ModeRunner.jsx'
 // Panel de detalle de un repo: dispara el análisis con la IA configurada y
 // gestiona la selección de categorías (1-4). El selector de modo y la ejecución
 // llegan en el siguiente bloque.
-export default function RepoDetail({ repo, onClose }) {
+export default function RepoDetail({ repo, onClose, onContribCreada }) {
   const { analisis, cargando, error, proveedor, analizar } = useRepoAnalysis()
   const [seleccionadas, setSeleccionadas] = useState([])
   const [modo, setModo] = useState(null)
@@ -116,6 +116,7 @@ export default function RepoDetail({ repo, onClose }) {
                   analisis={analisis}
                   seleccionadas={seleccionadas}
                   modo={modo}
+                  onContribCreada={onContribCreada}
                 />
               </div>
             )}

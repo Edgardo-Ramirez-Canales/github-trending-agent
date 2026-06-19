@@ -9,17 +9,29 @@ import { IconCheck } from './icons.jsx'
 //   A → borrador de texto copiable (no toca GitHub)
 //   B → abre issue real en el repo (con aprobación por categoría)
 //   C → agente completo (se implementa en ExecutionQueue, siguiente bloque)
-export default function ModeRunner({ repo, analisis, seleccionadas, modo }) {
+export default function ModeRunner({ repo, analisis, seleccionadas, modo, onContribCreada }) {
   if (!seleccionadas.length || !modo) return null
 
   if (modo === 'A') {
     return <ModoA repo={repo} analisis={analisis} seleccionadas={seleccionadas} />
   }
   if (modo === 'B') {
-    return <ModoB repo={repo} analisis={analisis} seleccionadas={seleccionadas} />
+    return (
+      <ModoB
+        repo={repo}
+        analisis={analisis}
+        seleccionadas={seleccionadas}
+        onContribCreada={onContribCreada}
+      />
+    )
   }
   return (
-    <ExecutionQueue repo={repo} analisis={analisis} seleccionadas={seleccionadas} />
+    <ExecutionQueue
+      repo={repo}
+      analisis={analisis}
+      seleccionadas={seleccionadas}
+      onContribCreada={onContribCreada}
+    />
   )
 }
 
@@ -80,7 +92,7 @@ function construirTextoA(meta, datos, contenido) {
 // ----------------------------------------------------------------------------
 // Modo B — Propuesta al dueño (issue real)
 // ----------------------------------------------------------------------------
-function ModoB({ repo, analisis, seleccionadas }) {
+function ModoB({ repo, analisis, seleccionadas, onContribCreada }) {
   const [estados, setEstados] = useState({}) // clave → { estado, url, error }
 
   async function abrir(clave) {
@@ -100,6 +112,8 @@ function ModoB({ repo, analisis, seleccionadas }) {
           url_issue: issue.html_url,
           categorias: [clave],
         })
+        // Avisa a App para refrescar badge + panel sin recargar.
+        await onContribCreada?.()
       } catch {
         /* registro best-effort */
       }

@@ -18,6 +18,7 @@ import Paginacion from './components/filtros/Paginacion.jsx'
 import ListaRepos from './components/ListaRepos.jsx'
 import NotificationBadge from './components/NotificationBadge.jsx'
 import NotificationPanel from './components/NotificationPanel.jsx'
+import PanelSeguimiento from './components/PanelSeguimiento.jsx'
 
 export default function App() {
   const { usuario, cargando, error, login, cerrarSesion } = useAuth()
@@ -43,9 +44,25 @@ export default function App() {
 // Vista autenticada (separada para que los hooks de notificaciones sean válidos).
 // ----------------------------------------------------------------------------
 function AppAutenticado({ usuario, onCerrarSesion }) {
-  const { contribuciones, notificaciones, noLeidas, marcarLeida, marcarTodas } =
-    useContributions(usuario.email)
+  const {
+    contribuciones,
+    notificaciones,
+    noLeidas,
+    marcarLeida,
+    marcarTodas,
+    refrescar,
+    revisarAhora,
+  } = useContributions(usuario.email)
   const [panelAbierto, setPanelAbierto] = useState(false)
+  const [vista, setVista] = useState('descubrir')
+
+  // Pestañas del header. El badge de contribuciones abiertas avisa cuántas
+  // siguen sin respuesta sin tener que entrar al panel.
+  const abiertas = contribuciones.filter((c) => c.estado === 'abierto').length
+  const tabs = [
+    { key: 'descubrir', label: 'Descubrir' },
+    { key: 'contribuciones', label: 'Mis contribuciones', badge: abiertas },
+  ]
 
   return (
     <div className="min-h-dvh">
@@ -57,6 +74,32 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
             <span className="text-[#4a4d54]">/</span>
             <span>GitHub Trending Agent</span>
           </h1>
+
+          <nav className="flex items-center gap-1">
+            {tabs.map((t) => {
+              const activo = vista === t.key
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setVista(t.key)}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                    activo
+                      ? 'bg-[#007ACC]/15 text-[#7cc7ff]'
+                      : 'text-[#8a8f98] hover:bg-white/[0.04] hover:text-[#e1e3e6]'
+                  }`}
+                >
+                  {t.label}
+                  {t.badge > 0 && (
+                    <span className="rounded-full bg-sky-500/20 px-1.5 text-xs font-semibold text-sky-300">
+                      {t.badge}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </nav>
+
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-[#8a8f98] sm:inline">
               {usuario.user_metadata?.user_name || usuario.email}
@@ -91,12 +134,22 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
       <main className="mx-auto max-w-7xl space-y-4 px-5 py-6">
         <PanelPerfil usuario={usuario} contribuciones={contribuciones} />
 
-        <section className="grid gap-4 md:grid-cols-2">
-          <TokenInput contribuciones={contribuciones} />
-          <AIProviderSelector />
-        </section>
+        {vista === 'descubrir' ? (
+          <>
+            <section className="grid gap-4 md:grid-cols-2">
+              <TokenInput contribuciones={contribuciones} />
+              <AIProviderSelector />
+            </section>
 
-        <TrendingSection />
+            <TrendingSection onContribCreada={refrescar} />
+          </>
+        ) : (
+          <PanelSeguimiento
+            contribuciones={contribuciones}
+            onRefrescar={refrescar}
+            onRevisarAhora={revisarAhora}
+          />
+        )}
       </main>
     </div>
   )
@@ -105,7 +158,7 @@ function AppAutenticado({ usuario, onCerrarSesion }) {
 // ----------------------------------------------------------------------------
 // Sección de repos trending: filtros + lista de 15.
 // ----------------------------------------------------------------------------
-function TrendingSection() {
+function TrendingSection({ onContribCreada }) {
   const { filtros, filtrosServidor, setFiltro, setFecha, setModo, toggleLenguaje, limpiar } =
     useFiltros()
   const { repos, cargando, error, recargar } = useTrendingRepos(filtrosServidor)
@@ -291,7 +344,11 @@ function TrendingSection() {
 
       {/* Detalle + análisis con IA */}
       {seleccionado && (
-        <RepoDetail repo={seleccionado} onClose={() => setSeleccionado(null)} />
+        <RepoDetail
+          repo={seleccionado}
+          onClose={() => setSeleccionado(null)}
+          onContribCreada={onContribCreada}
+        />
       )}
     </section>
   )

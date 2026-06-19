@@ -93,6 +93,12 @@ export async function getContribuciones({ estado } = {}) {
   return data ?? []
 }
 
+// Borra una contribución del historial (solo la fila en DB; NO toca GitHub).
+export async function borrarContribucion(id) {
+  const { error } = await supabase.from('contribuciones').delete().eq('id', id)
+  if (error) throw error
+}
+
 // Actualiza el estado de una contribución (al detectar aceptado/rechazado/cancelado).
 export async function actualizarEstadoContribucion(id, estado) {
   const { data, error } = await supabase

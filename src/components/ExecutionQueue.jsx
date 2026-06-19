@@ -35,7 +35,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 // Modo C completo: resumen consolidado → fork → rama → diff/aprobación por
 // categoría → commit → PR, con "Cancelar todo" siempre visible y rollback.
-export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
+export default function ExecutionQueue({ repo, analisis, seleccionadas, onContribCreada }) {
   const [fase, setFase] = useState('resumen') // resumen | ejecutando | finalizado | cancelado
   const [prMode, setPrMode] = useState('separados') // separados | unico
   const [idx, setIdx] = useState(0)
@@ -189,6 +189,8 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
           url_pr: pr.html_url,
           categorias: [clave],
         }).catch(() => null)
+        // Refresca badge + panel de contribuciones sin recargar la página.
+        await onContribCreada?.()
         setItem(clave, { estado: 'pr-abierto', prUrl: pr.html_url })
         setPrsAbiertos((p) => [
           ...p,
@@ -244,6 +246,8 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas }) {
           url_pr: pr.html_url,
           categorias: committed,
         }).catch(() => null)
+        // Refresca badge + panel de contribuciones sin recargar la página.
+        await onContribCreada?.()
         setPrsAbiertos((p) => [
           ...p,
           {
