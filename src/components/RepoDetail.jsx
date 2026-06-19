@@ -1,14 +1,45 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRepoAnalysis } from '../hooks/useRepoAnalysis.js'
+import { META_POR_CLAVE, getArchivoSugerido } from '../utils/categorias.js'
+import {
+  generarDiagramaHTML,
+  generarSkillMD,
+  generarOnboardingMD,
+  descargar,
+} from '../utils/artefactos.js'
 import AnalysisPanel from './AnalysisPanel.jsx'
 import ModeSelector from './ModeSelector.jsx'
 import ModeRunner from './ModeRunner.jsx'
 
+// Genera y descarga el artefacto local de una categoría (destino: 'artefacto').
+function descargarArtefacto(clave, datos) {
+  const meta = META_POR_CLAVE[clave]
+  let contenido = ''
+  if (clave === 'diagrama_arquitectura') {
+    contenido = generarDiagramaHTML(datos.nodos, datos.aristas, datos.resumen_funcional)
+  } else if (clave === 'skill_plantilla') {
+    contenido = generarSkillMD(datos)
+  } else if (clave === 'onboarding') {
+    contenido = generarOnboardingMD(datos)
+  }
+  if (!contenido) return
+  descargar(getArchivoSugerido(clave, datos), contenido, meta?.artefacto?.mime)
+}
+
 // Panel de detalle de un repo: dispara el análisis con la IA configurada y
-// gestiona la selección de categorías (1-4). El selector de modo y la ejecución
-// llegan en el siguiente bloque.
+// gestiona la selección de categorías. Enruta cada categoría según su destino:
+// 'pr' → fork→PR vía ModeRunner; 'artefacto' → descarga local; 'lectura' → nada.
 export default function RepoDetail({ repo, onClose, onContribCreada }) {
-  const { analisis, cargando, error, proveedor, analizar } = useRepoAnalysis()
+  const {
+    analisis,
+    cargando,
+    error,
+    proveedor,
+    analizar,
+    modo: modoAnalisis,
+    idiomaRepo,
+    setIdiomaRepo,
+  } = useRepoAnalysis()
   const [seleccionadas, setSeleccionadas] = useState([])
   const [modo, setModo] = useState(null)
 
@@ -27,9 +58,24 @@ export default function RepoDetail({ repo, onClose, onContribCreada }) {
     )
   }, [])
 
-  const atacar = useCallback((clave) => {
-    setSeleccionadas((prev) => (prev.includes(clave) ? prev : [...prev, clave]))
-  }, [])
+  // Acción principal de una categoría según su destino.
+  const atacar = useCallback(
+    (clave) => {
+      const destino = META_POR_CLAVE[clave]?.destino
+      if (destino === 'artefacto') {
+        descargarArtefacto(clave, analisis?.[clave] || {})
+        return
+      }
+      // destino 'pr': se suma a la selección para ejecutarse vía ModeRunner.
+      setSeleccionadas((prev) => (prev.includes(clave) ? prev : [...prev, clave]))
+    },
+    [analisis],
+  )
+
+  // Solo las categorías PR llegan a ModeRunner (los artefactos se descargan aparte).
+  const seleccionadasPR = seleccionadas.filter(
+    (c) => META_POR_CLAVE[c]?.destino === 'pr',
+  )
 
   if (!repo) return null
 
@@ -101,12 +147,18 @@ export default function RepoDetail({ repo, onClose, onContribCreada }) {
               seleccionadas={seleccionadas}
               onToggle={toggle}
               onAtacar={atacar}
+              idiomaRepo={idiomaRepo}
+              onCambiarIdioma={setIdiomaRepo}
+              onAnalisisProfundo={() => analizar(repo, { modo: 'B' })}
+              modo={modoAnalisis}
+              cargando={cargando}
             />
 
-            {/* Selección de modo + ejecución */}
-            {seleccionadas.length === 0 ? (
+            {/* Selección de modo + ejecución (solo categorías PR) */}
+            {seleccionadasPR.length === 0 ? (
               <div className="mt-5 rounded-lg border border-dashed border-white/[0.1] bg-white/[0.02] p-4 text-center text-sm text-[#62666d]">
-                Selecciona al menos una categoría para elegir un modo de acción.
+                Selecciona una categoría PR para elegir un modo de acción, o usa
+                «Generar y descargar» en los artefactos.
               </div>
             ) : (
               <div className="mt-6 border-t border-white/[0.08] pt-5">
@@ -114,7 +166,7 @@ export default function RepoDetail({ repo, onClose, onContribCreada }) {
                 <ModeRunner
                   repo={repo}
                   analisis={analisis}
-                  seleccionadas={seleccionadas}
+                  seleccionadas={seleccionadasPR}
                   modo={modo}
                   onContribCreada={onContribCreada}
                 />
