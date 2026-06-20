@@ -6,7 +6,7 @@ import { extraerJSON } from './_json.js'
 const ENDPOINT = 'https://api.minimax.io/v1/text/chatcompletion_v2'
 const MODELO_DEFAULT = 'MiniMax-Text-01'
 
-export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
+export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT, maxTokens = 4096) {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     headers: {
@@ -17,6 +17,7 @@ export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
       model: modelo,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
+      max_tokens: maxTokens,
     }),
   })
 

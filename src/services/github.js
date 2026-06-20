@@ -336,6 +336,84 @@ export async function getRepo(owner, repo) {
   return ghFetch(`/repos/${owner}/${repo}`)
 }
 
+// Árbol recursivo del default branch: TODOS los paths de archivo del repo en una
+// sola llamada (git/trees?recursive=1). Devuelve solo blobs (archivos, no dirs).
+// `truncado` avisa cuando GitHub cortó la respuesta (repos enormes): el caller
+// debe degradar con gracia (priorizar raíz y src/).
+export async function getArbolRecursivo(owner, repo, rama) {
+  let ref = rama
+  if (!ref) {
+    const detalle = await getRepo(owner, repo)
+    ref = detalle?.default_branch || 'main'
+  }
+  const data = await ghFetch(
+    `/repos/${owner}/${repo}/git/trees/${encodeURIComponent(ref)}?recursive=1`,
+  )
+  const paths = (data?.tree ?? [])
+    .filter((n) => n.type === 'blob')
+    .map((n) => ({ path: n.path, tamano: n.size ?? 0 }))
+  return { paths, truncado: Boolean(data?.truncated), rama: ref }
+}
+
+// Baja el contenido de varios archivos en paralelo (para el contexto de la IA).
+// Respeta un tope por archivo (default 30 KB): si lo supera, recorta y marca
+// `recortado: true`. Los archivos que fallan (404, binarios) se omiten.
+export async function getContenidoArchivos(owner, repo, paths = [], maxBytes = 30_000) {
+  const resultados = await Promise.all(
+    paths.map(async (path) => {
+      try {
+        const { contenido, existe } = await getContenidoArchivo(owner, repo, path)
+        if (!existe) return null
+        const recortado = contenido.length > maxBytes
+        return {
+          path,
+          contenido: recortado ? contenido.slice(0, maxBytes) : contenido,
+          recortado,
+        }
+      } catch {
+        return null // binario, 404 u otro error → se omite
+      }
+    }),
+  )
+  return resultados.filter(Boolean)
+}
+
+// Issues abiertos filtrados por uno o más labels (para good_first_issue).
+// GitHub acepta labels separados por coma con semántica OR vía múltiples llamadas;
+// aquí pedimos cada label y unimos sin duplicar por número.
+export async function getIssuesPorLabel(owner, repo, labels = [], max = 20) {
+  const porLabel = await Promise.all(
+    labels.map(async (label) => {
+      try {
+        const data = await ghFetch(
+          `/repos/${owner}/${repo}/issues?state=open&labels=${encodeURIComponent(
+            label,
+          )}&per_page=${max}`,
+        )
+        return data ?? []
+      } catch {
+        return []
+      }
+    }),
+  )
+  const vistos = new Set()
+  const unicos = []
+  for (const issue of porLabel.flat()) {
+    if (issue.pull_request || vistos.has(issue.number)) continue
+    vistos.add(issue.number)
+    unicos.push({
+      numero: issue.number,
+      titulo: issue.title,
+      cuerpo: (issue.body || '').slice(0, 500),
+      etiquetas: (issue.labels || []).map((l) =>
+        typeof l === 'string' ? l : l.name,
+      ),
+      reacciones: issue.reactions?.total_count ?? 0,
+    })
+  }
+  return unicos
+}
+
 // SHA + contenido actual de un archivo (necesario para sobreescribir en commit).
 export async function getContenidoArchivo(owner, repo, path, ref) {
   try {

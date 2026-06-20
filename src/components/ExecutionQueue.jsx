@@ -16,20 +16,30 @@ import {
 import {
   META_POR_CLAVE,
   getArchivoSugerido,
-  getContenidoGenerado,
+  aplicarCambio,
   getNombreRama,
 } from '../utils/categorias.js'
 import { detectarImpactoImports } from '../utils/diff.js'
 import DiffViewer from './DiffViewer.jsx'
 import { IconCheck, IconPencil, IconSkip, IconX } from './icons.jsx'
 
-// Orden de ejecución por riesgo: de menor a mayor (Docs → Mercado → Features → Código).
+// Orden de ejecución por riesgo, de menor a mayor (categorías PR).
 const ORDEN_RIESGO = [
-  'docs_readme',
-  'gap_mercado',
+  'mejora_docs',
+  'test_faltante',
+  'a11y',
+  'dependencia_obsoleta',
+  'good_first_issue',
+  'fix_pequeno',
   'features_faltantes',
-  'codigo_solid',
 ]
+
+// Ordena las claves seleccionadas por riesgo; las no listadas van al final.
+function ordenarPorRiesgo(seleccionadas) {
+  const enOrden = ORDEN_RIESGO.filter((c) => seleccionadas.includes(c))
+  const resto = seleccionadas.filter((c) => !ORDEN_RIESGO.includes(c))
+  return [...enOrden, ...resto]
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -54,7 +64,7 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas, onContri
 
   // Orden previsto (para el resumen), respetando el orden de riesgo.
   const ordenPreview = useMemo(
-    () => ORDEN_RIESGO.filter((c) => seleccionadas.includes(c)),
+    () => ordenarPorRiesgo(seleccionadas),
     [seleccionadas],
   )
 
@@ -119,7 +129,6 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas, onContri
     try {
       const datos = analisis[clave] || {}
       const archivo = getArchivoSugerido(clave, datos)
-      const nuevo = getContenidoGenerado(clave, datos)
       const { forkOwner, forkRepo, baseSha, ramaUnica } = ctx.current
 
       let rama
@@ -135,7 +144,10 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas, onContri
       }
 
       const actual = await getContenidoArchivo(forkOwner, forkRepo, archivo, rama)
-      const advertencia = detectarImpactoImports(archivo, nuevo)
+      // Construye el contenido final a partir del archivo REAL del fork: docs anexa,
+      // tests = archivo nuevo, código = parches buscar/reemplazar. Nunca borra el resto.
+      const { nuevo, advertencia: advAplic } = aplicarCambio(clave, datos, actual.contenido)
+      const advertencia = advAplic || detectarImpactoImports(archivo, nuevo)
 
       setItem(clave, {
         estado: 'diff',
@@ -736,7 +748,13 @@ function ResultadoFinal({ prs, items, orden }) {
 // Helpers de mensajes
 // ---------------------------------------------------------------------------
 function tituloCorto(meta, datos) {
-  return datos.feature_principal || datos.principio_violado || meta.label
+  return (
+    datos.feature_principal ||
+    datos.issue_titulo ||
+    datos.funcion_objetivo ||
+    datos.problema ||
+    meta.label
+  )
 }
 
 function construirMensajeCommit(meta, datos) {
