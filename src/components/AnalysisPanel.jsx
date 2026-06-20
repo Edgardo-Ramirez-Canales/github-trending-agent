@@ -1,72 +1,36 @@
 import CategorySelector from './CategorySelector.jsx'
+import SaludRepo from './SaludRepo.jsx'
 
-// Resultado del análisis de la IA: bloque de Score de oportunidad (solo lectura)
-// + los checkboxes de categorías (delegados a CategorySelector).
+// Resultado del análisis de la IA: bloque de Salud del repo (solo lectura)
+// + las categorías accionables (delegadas a CategorySelector).
 export default function AnalysisPanel({
   analisis,
   seleccionadas,
   onToggle,
   onAtacar,
+  idiomaRepo,
+  onCambiarIdioma,
+  estadosCategoria,
+  cargando,
 }) {
   if (!analisis) return null
 
-  const score = analisis.score_oportunidad || {}
-
   return (
     <div className="space-y-4">
-      {/* Score de oportunidad (solo lectura) */}
-      <div className="rounded-lg border border-white/[0.08] bg-[#121316] p-4">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold text-[#e1e3e6]">
-            Score de oportunidad
-          </h3>
-          <span className="rounded-full bg-[#007ACC]/15 px-2.5 py-0.5 text-xs font-semibold text-[#7cc7ff] ring-1 ring-[#007ACC]/30">
-            Global {score.puntaje_global ?? '—'}/10
-          </span>
-        </div>
-        {score.justificacion && (
-          <p className="mt-2 text-sm text-[#8a8f98]">{score.justificacion}</p>
-        )}
-        {score.categoria_recomendada && (
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="text-xs text-[#8a8f98]">
-              Recomendado primero:{' '}
-              <strong className="text-[#e1e3e6]">
-                {etiqueta(score.categoria_recomendada)}
-              </strong>
-            </span>
-            <button
-              type="button"
-              onClick={() => onAtacar?.(score.categoria_recomendada)}
-              className="rounded-md bg-[#007ACC]/18 px-3 py-1 text-xs font-medium text-[#d7efff] ring-1 ring-[#007ACC]/45 hover:bg-[#007ACC]/26 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
-            >
-              Atacar esta oportunidad
-            </button>
-          </div>
-        )}
-        {Array.isArray(score.orden_sugerido) && score.orden_sugerido.length > 0 && (
-          <p className="mt-2 text-xs text-[#62666d]">
-            Orden sugerido: {score.orden_sugerido.map(etiqueta).join(' → ')}
-          </p>
-        )}
-      </div>
+      {/* Salud del repositorio (solo lectura) */}
+      <SaludRepo datos={analisis.salud_repo} />
 
-      {/* Checkboxes de categorías */}
+      {/* Categorías accionables */}
       <CategorySelector
         analisis={analisis}
         seleccionadas={seleccionadas}
         onToggle={onToggle}
+        onAtacar={onAtacar}
+        idiomaRepo={idiomaRepo}
+        onCambiarIdioma={onCambiarIdioma}
+        estadosCategoria={estadosCategoria}
+        cargando={cargando}
       />
     </div>
   )
-}
-
-function etiqueta(clave) {
-  const map = {
-    features_faltantes: 'Features',
-    docs_readme: 'Docs',
-    gap_mercado: 'Mercado',
-    codigo_solid: 'Código',
-  }
-  return map[clave] || clave
 }
