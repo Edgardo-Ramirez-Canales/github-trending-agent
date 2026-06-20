@@ -4,11 +4,13 @@ import {
   getIssuesAbiertos,
   getIssuesPorLabel,
   getArbolRecursivo,
-  getContenidoArchivos,
 } from '../services/github.js'
-import { analizarRepo, nombreProveedorActivo } from '../services/ai/index.js'
+import {
+  analizarRepo,
+  analizarCategoria as analizarCategoriaIA,
+  nombreProveedorActivo,
+} from '../services/ai/index.js'
 import { detectarIdioma } from '../utils/idiomaRepo.js'
-import { elegirArchivos } from '../utils/selectorArchivos.js'
 
 // Labels que marcan issues "para empezar" (categoría good_first_issue).
 const ETIQUETAS_GFI = ['good-first-issue', 'good first issue', 'help-wanted', 'up-for-grabs']
@@ -19,31 +21,31 @@ function unirIssues(base = [], extra = []) {
   return [...base, ...extra.filter((i) => !vistos.has(i.numero))]
 }
 
-// Hook de análisis: reúne el contexto del repo desde GitHub (README, issues,
-// árbol recursivo y archivos clave) y lo manda al proveedor de IA activo.
-// Soporta modo A (1 pasada, default) y modo B (2 pasadas, "Análisis profundo"),
-// más un toggle manual de idioma que regenera el análisis.
+// Hook de análisis en DOS FASES:
+//   Fase 1 (analizar): diagnóstico ligero de todas las categorías (sin bajar archivos).
+//   Fase 2 (analizarCategoria): ataque enfocado a 1 categoría → la IA pide archivos,
+//     se bajan, genera contenido completo, y se fusiona en analisis[clave].
+// El contexto de Fase 1 se guarda en una ref para reusarlo en Fase 2 sin re-fetch.
 export function useRepoAnalysis() {
   const [analisis, setAnalisis] = useState(null)
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState(null)
   const [proveedor, setProveedor] = useState(null)
-  const [modo, setModo] = useState('A')
   const [idiomaRepo, setIdiomaRepoState] = useState('en')
+  const [estadosCategoria, setEstadosCategoria] = useState({}) // clave → { estado, error }
 
   const ultimoRepoRef = useRef(null)
-  const modoRef = useRef('A')
+  const contextoRef = useRef(null)
   const idiomaRepoRef = useRef('en')
   const idiomaManualRef = useRef(false) // true cuando el usuario lo fijó a mano
 
-  const analizar = useCallback(async (repo, { modo: modoArg = 'A', idioma } = {}) => {
+  const analizar = useCallback(async (repo, { idioma } = {}) => {
     if (!repo) return
     ultimoRepoRef.current = repo
-    modoRef.current = modoArg
-    setModo(modoArg)
     setCargando(true)
     setError(null)
     setAnalisis(null)
+    setEstadosCategoria({})
     setProveedor(nombreProveedorActivo())
     try {
       const [readme, issuesBase, issuesGFI, arbol] = await Promise.all([
@@ -64,13 +66,6 @@ export function useRepoAnalysis() {
       idiomaRepoRef.current = idiomaFinal
       setIdiomaRepoState(idiomaFinal)
 
-      // Modo A baja los archivos aquí; modo B los pide la IA en la pasada 1.
-      let archivos = []
-      if (modoArg !== 'B') {
-        const paths = elegirArchivos(arbol, readme, issues)
-        archivos = await getContenidoArchivos(repo.owner, repo.repo, paths)
-      }
-
       const contexto = {
         meta: {
           nombre: repo.nombre,
@@ -84,12 +79,13 @@ export function useRepoAnalysis() {
         idiomaRepo: idiomaFinal,
         issues,
         arbol,
-        archivos,
+        archivos: [],
         owner: repo.owner,
         repo: repo.repo,
       }
+      contextoRef.current = contexto
 
-      const resultado = await analizarRepo(contexto, { modo: modoArg })
+      const resultado = await analizarRepo(contexto)
       setAnalisis(resultado)
     } catch (e) {
       setError(e.message || 'Falló el análisis con IA')
@@ -98,15 +94,36 @@ export function useRepoAnalysis() {
     }
   }, [])
 
-  // Toggle manual de idioma: fija la preferencia y regenera el análisis del
-  // último repo con el mismo modo.
+  // Fase 2: ataque enfocado a una categoría. Devuelve los datos generados (o lanza).
+  // Fusiona el resultado en analisis[clave] y marca __profundo para no repetir.
+  const analizarCategoria = useCallback(async (clave) => {
+    const contexto = contextoRef.current
+    if (!contexto) throw new Error('Primero hay que diagnosticar el repo')
+
+    setEstadosCategoria((p) => ({ ...p, [clave]: { estado: 'cargando' } }))
+    try {
+      const datos = await analizarCategoriaIA(contexto, clave)
+      const fusionado = { ...datos, __profundo: true }
+      setAnalisis((prev) => ({ ...prev, [clave]: { ...(prev?.[clave] || {}), ...fusionado } }))
+      setEstadosCategoria((p) => ({ ...p, [clave]: { estado: 'listo' } }))
+      return fusionado
+    } catch (e) {
+      setEstadosCategoria((p) => ({
+        ...p,
+        [clave]: { estado: 'error', error: e.message },
+      }))
+      throw e
+    }
+  }, [])
+
+  // Toggle manual de idioma: fija la preferencia y regenera el diagnóstico.
   const setIdiomaRepo = useCallback(
     (nuevo) => {
       idiomaManualRef.current = true
       idiomaRepoRef.current = nuevo
       setIdiomaRepoState(nuevo)
       if (ultimoRepoRef.current) {
-        analizar(ultimoRepoRef.current, { modo: modoRef.current, idioma: nuevo })
+        analizar(ultimoRepoRef.current, { idioma: nuevo })
       }
     },
     [analizar],
@@ -115,7 +132,9 @@ export function useRepoAnalysis() {
   const reset = useCallback(() => {
     setAnalisis(null)
     setError(null)
+    setEstadosCategoria({})
     ultimoRepoRef.current = null
+    contextoRef.current = null
     idiomaManualRef.current = false
   }, [])
 
@@ -124,9 +143,10 @@ export function useRepoAnalysis() {
     cargando,
     error,
     proveedor,
-    modo,
     idiomaRepo,
+    estadosCategoria,
     analizar,
+    analizarCategoria,
     setIdiomaRepo,
     reset,
   }

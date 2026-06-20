@@ -4,7 +4,6 @@ import { META_POR_CLAVE, getArchivoSugerido } from '../utils/categorias.js'
 import {
   generarDiagramaHTML,
   generarSkillMD,
-  generarOnboardingMD,
   descargar,
 } from '../utils/artefactos.js'
 import AnalysisPanel from './AnalysisPanel.jsx'
@@ -19,8 +18,6 @@ function descargarArtefacto(clave, datos) {
     contenido = generarDiagramaHTML(datos.nodos, datos.aristas, datos.resumen_funcional)
   } else if (clave === 'skill_plantilla') {
     contenido = generarSkillMD(datos)
-  } else if (clave === 'onboarding') {
-    contenido = generarOnboardingMD(datos)
   }
   if (!contenido) return
   descargar(getArchivoSugerido(clave, datos), contenido, meta?.artefacto?.mime)
@@ -36,7 +33,8 @@ export default function RepoDetail({ repo, onClose, onContribCreada }) {
     error,
     proveedor,
     analizar,
-    modo: modoAnalisis,
+    analizarCategoria,
+    estadosCategoria,
     idiomaRepo,
     setIdiomaRepo,
   } = useRepoAnalysis()
@@ -58,18 +56,27 @@ export default function RepoDetail({ repo, onClose, onContribCreada }) {
     )
   }, [])
 
-  // Acción principal de una categoría según su destino.
+  // Acción principal de una categoría: dispara el análisis profundo (Fase 2) si
+  // aún no se generó el contenido, luego enruta según destino.
   const atacar = useCallback(
-    (clave) => {
-      const destino = META_POR_CLAVE[clave]?.destino
-      if (destino === 'artefacto') {
-        descargarArtefacto(clave, analisis?.[clave] || {})
+    async (clave) => {
+      const meta = META_POR_CLAVE[clave]
+      let datos = analisis?.[clave] || {}
+      if (!datos.__profundo) {
+        try {
+          datos = await analizarCategoria(clave)
+        } catch {
+          return // el estado de error se muestra en la tarjeta
+        }
+      }
+      if (meta?.destino === 'artefacto') {
+        descargarArtefacto(clave, datos)
         return
       }
       // destino 'pr': se suma a la selección para ejecutarse vía ModeRunner.
       setSeleccionadas((prev) => (prev.includes(clave) ? prev : [...prev, clave]))
     },
-    [analisis],
+    [analisis, analizarCategoria],
   )
 
   // Solo las categorías PR llegan a ModeRunner (los artefactos se descargan aparte).
@@ -149,8 +156,7 @@ export default function RepoDetail({ repo, onClose, onContribCreada }) {
               onAtacar={atacar}
               idiomaRepo={idiomaRepo}
               onCambiarIdioma={setIdiomaRepo}
-              onAnalisisProfundo={() => analizar(repo, { modo: 'B' })}
-              modo={modoAnalisis}
+              estadosCategoria={estadosCategoria}
               cargando={cargando}
             />
 

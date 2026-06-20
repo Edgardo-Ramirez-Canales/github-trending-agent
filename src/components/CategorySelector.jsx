@@ -11,8 +11,7 @@ export default function CategorySelector({
   onAtacar,
   idiomaRepo,
   onCambiarIdioma,
-  onAnalisisProfundo,
-  modo,
+  estadosCategoria = {},
   cargando,
 }) {
   if (!analisis) return null
@@ -22,13 +21,7 @@ export default function CategorySelector({
 
   return (
     <div className="space-y-4">
-      <Cabecera
-        idiomaRepo={idiomaRepo}
-        onCambiarIdioma={onCambiarIdioma}
-        onAnalisisProfundo={onAnalisisProfundo}
-        modo={modo}
-        cargando={cargando}
-      />
+      <Cabecera idiomaRepo={idiomaRepo} onCambiarIdioma={onCambiarIdioma} cargando={cargando} />
 
       <Grupo titulo="Aportes para PR">
         {pr.map((cat) => (
@@ -36,6 +29,7 @@ export default function CategorySelector({
             key={cat.clave}
             cat={cat}
             datos={analisis[cat.clave] || {}}
+            estado={estadosCategoria[cat.clave]}
             seleccionada={seleccionadas.includes(cat.clave)}
             onToggle={() => onToggle?.(cat.clave)}
             onAtacar={() => onAtacar?.(cat.clave)}
@@ -43,12 +37,13 @@ export default function CategorySelector({
         ))}
       </Grupo>
 
-      <Grupo titulo="Artefactos (descarga local)">
+      <Grupo titulo="Artefactos (se generan al pedirlos)">
         {artefactos.map((cat) => (
           <CategoriaCard
             key={cat.clave}
             cat={cat}
             datos={analisis[cat.clave] || {}}
+            estado={estadosCategoria[cat.clave]}
             seleccionada={seleccionadas.includes(cat.clave)}
             onToggle={() => onToggle?.(cat.clave)}
             onAtacar={() => onAtacar?.(cat.clave)}
@@ -59,24 +54,13 @@ export default function CategorySelector({
   )
 }
 
-function Cabecera({ idiomaRepo, onCambiarIdioma, onAnalisisProfundo, modo, cargando }) {
+function Cabecera({ idiomaRepo, onCambiarIdioma, cargando }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="text-xs text-[#62666d]">
-        Marca las categorías sobre las que quieras actuar.
+        Diagnóstico rápido. Pulsa «Analizar a fondo» en una categoría para generar el contenido completo.
       </p>
-      <div className="flex items-center gap-2">
-        <ToggleIdioma idioma={idiomaRepo} onCambiar={onCambiarIdioma} disabled={cargando} />
-        <button
-          type="button"
-          onClick={onAnalisisProfundo}
-          disabled={cargando || modo === 'B'}
-          className="rounded-md bg-[#007ACC]/18 px-3 py-1 text-xs font-medium text-[#d7efff] ring-1 ring-[#007ACC]/45 enabled:hover:bg-[#007ACC]/26 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#007ACC]"
-          title="Reanaliza leyendo el código real (dos pasadas, consume más tokens)"
-        >
-          {modo === 'B' ? 'Análisis profundo ✓' : 'Análisis profundo'}
-        </button>
-      </div>
+      <ToggleIdioma idioma={idiomaRepo} onCambiar={onCambiarIdioma} disabled={cargando} />
     </div>
   )
 }
@@ -115,10 +99,16 @@ function Grupo({ titulo, children }) {
   )
 }
 
-function CategoriaCard({ cat, datos, seleccionada, onToggle, onAtacar }) {
+function CategoriaCard({ cat, datos, estado, seleccionada, onToggle, onAtacar }) {
   const [abierta, setAbierta] = useState(false)
   const score = Number(datos.score) || 0
   const noAplica = datos.aplica === false
+  const cargando = estado?.estado === 'cargando'
+  const profundo = datos.__profundo === true
+  const esArtefacto = cat.destino === 'artefacto'
+  const etiquetaAtacar = esArtefacto
+    ? profundo ? 'Descargar de nuevo' : 'Generar y descargar'
+    : profundo ? 'Atacar' : 'Analizar a fondo'
 
   return (
     <div
@@ -168,11 +158,15 @@ function CategoriaCard({ cat, datos, seleccionada, onToggle, onAtacar }) {
                 <button
                   type="button"
                   onClick={onAtacar}
-                  className="text-xs font-medium text-[#7cc7ff] hover:text-[#d7efff]"
+                  disabled={cargando}
+                  className="text-xs font-medium text-[#7cc7ff] hover:text-[#d7efff] disabled:opacity-60"
                 >
-                  {cat.destino === 'artefacto' ? 'Generar y descargar' : 'Atacar'}
+                  {cargando ? 'Analizando a fondo…' : etiquetaAtacar}
                 </button>
               </div>
+              {estado?.estado === 'error' && (
+                <p className="mt-2 text-xs text-red-400">{estado.error}</p>
+              )}
               {abierta && <Detalle cat={cat} datos={datos} />}
             </>
           )}
@@ -194,7 +188,12 @@ function Detalle({ cat, datos }) {
       {cat.clave === 'mejora_docs' && (
         <>
           <Lista label="Faltan" items={datos.secciones_faltantes} />
-          <CodeBlock texto={datos.contenido_propuesto} />
+          {datos.seccion_propuesta ? (
+            <>
+              <p className="text-xs text-[#62666d]">Sección a añadir al final:</p>
+              <CodeBlock texto={datos.seccion_propuesta} />
+            </>
+          ) : null}
         </>
       )}
 
@@ -217,14 +216,20 @@ function Detalle({ cat, datos }) {
             }
           />
           <Campo label="Archivo" valor={datos.archivo_afectado} />
-          <CodeBlock texto={datos.codigo_propuesto} />
+          {datos.explicacion_cambios && (
+            <p className="text-[#8a8f98]">{datos.explicacion_cambios}</p>
+          )}
+          <Cambios cambios={datos.cambios} />
         </>
       )}
 
       {cat.clave === 'features_faltantes' && (
         <>
           <Campo label="Feature" valor={datos.feature_principal} />
-          <CodeBlock texto={datos.codigo_propuesto} />
+          {datos.explicacion_cambios && (
+            <p className="text-[#8a8f98]">{datos.explicacion_cambios}</p>
+          )}
+          <Cambios cambios={datos.cambios} />
         </>
       )}
 
@@ -235,7 +240,7 @@ function Detalle({ cat, datos }) {
           {datos.explicacion_cambios && (
             <p className="text-[#8a8f98]">{datos.explicacion_cambios}</p>
           )}
-          <CodeBlock texto={datos.codigo_refactorizado} />
+          <Cambios cambios={datos.cambios} />
         </>
       )}
 
@@ -243,7 +248,10 @@ function Detalle({ cat, datos }) {
         <>
           <Campo label="Problema" valor={datos.problema} />
           <Campo label="Archivo" valor={datos.archivo_afectado} />
-          <CodeBlock texto={datos.codigo_propuesto} />
+          {datos.explicacion_cambios && (
+            <p className="text-[#8a8f98]">{datos.explicacion_cambios}</p>
+          )}
+          <Cambios cambios={datos.cambios} />
         </>
       )}
 
@@ -261,7 +269,7 @@ function Detalle({ cat, datos }) {
               ))}
             </ul>
           )}
-          <CodeBlock texto={datos.contenido_propuesto} />
+          <Cambios cambios={datos.cambios} />
         </>
       )}
 
@@ -282,8 +290,6 @@ function Detalle({ cat, datos }) {
           <CodeBlock texto={datos.contenido_skill} />
         </>
       )}
-
-      {cat.clave === 'onboarding' && <CodeBlock texto={datos.contenido} />}
     </div>
   )
 }
@@ -312,6 +318,25 @@ function CodeBlock({ texto }) {
     <pre className="max-h-64 overflow-auto rounded-md bg-[#0a0b0d] p-3 text-xs text-[#c4c7cc] ring-1 ring-white/[0.08]">
       <code>{texto}</code>
     </pre>
+  )
+}
+
+// Parches buscar→reemplazar (categorías que editan un archivo existente).
+function Cambios({ cambios }) {
+  if (!Array.isArray(cambios) || !cambios.length) return null
+  return (
+    <div className="space-y-2">
+      {cambios.map((c, i) => (
+        <div key={i} className="rounded-md bg-[#0a0b0d] ring-1 ring-white/[0.08]">
+          <pre className="max-h-40 overflow-auto border-l-2 border-rose-500/50 p-2 text-xs text-rose-300/90">
+            <code>{c?.buscar || ''}</code>
+          </pre>
+          <pre className="max-h-40 overflow-auto border-l-2 border-emerald-500/50 p-2 text-xs text-emerald-300/90">
+            <code>{c?.reemplazar || ''}</code>
+          </pre>
+        </div>
+      ))}
+    </div>
   )
 }
 

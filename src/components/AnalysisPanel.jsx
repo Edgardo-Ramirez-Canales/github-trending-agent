@@ -10,8 +10,7 @@ export default function AnalysisPanel({
   onAtacar,
   idiomaRepo,
   onCambiarIdioma,
-  onAnalisisProfundo,
-  modo,
+  estadosCategoria,
   cargando,
 }) {
   if (!analisis) return null
@@ -29,8 +28,7 @@ export default function AnalysisPanel({
         onAtacar={onAtacar}
         idiomaRepo={idiomaRepo}
         onCambiarIdioma={onCambiarIdioma}
-        onAnalisisProfundo={onAnalisisProfundo}
-        modo={modo}
+        estadosCategoria={estadosCategoria}
         cargando={cargando}
       />
     </div>

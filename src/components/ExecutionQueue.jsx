@@ -16,7 +16,7 @@ import {
 import {
   META_POR_CLAVE,
   getArchivoSugerido,
-  getContenidoGenerado,
+  aplicarCambio,
   getNombreRama,
 } from '../utils/categorias.js'
 import { detectarImpactoImports } from '../utils/diff.js'
@@ -129,7 +129,6 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas, onContri
     try {
       const datos = analisis[clave] || {}
       const archivo = getArchivoSugerido(clave, datos)
-      const nuevo = getContenidoGenerado(clave, datos)
       const { forkOwner, forkRepo, baseSha, ramaUnica } = ctx.current
 
       let rama
@@ -145,7 +144,10 @@ export default function ExecutionQueue({ repo, analisis, seleccionadas, onContri
       }
 
       const actual = await getContenidoArchivo(forkOwner, forkRepo, archivo, rama)
-      const advertencia = detectarImpactoImports(archivo, nuevo)
+      // Construye el contenido final a partir del archivo REAL del fork: docs anexa,
+      // tests = archivo nuevo, código = parches buscar/reemplazar. Nunca borra el resto.
+      const { nuevo, advertencia: advAplic } = aplicarCambio(clave, datos, actual.contenido)
+      const advertencia = advAplic || detectarImpactoImports(archivo, nuevo)
 
       setItem(clave, {
         estado: 'diff',
