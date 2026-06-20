@@ -12,7 +12,7 @@ const ENDPOINT = 'https://api.anthropic.com/v1/messages'
 const VERSION = '2023-06-01'
 const MODELO_DEFAULT = 'claude-3-5-haiku-latest'
 
-export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
+export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT, maxTokens = 4096) {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     headers: {
@@ -23,7 +23,7 @@ export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
     },
     body: JSON.stringify({
       model: modelo,
-      max_tokens: 4096,
+      max_tokens: maxTokens,
       temperature: 0.4,
       messages: [
         { role: 'user', content: prompt },

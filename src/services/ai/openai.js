@@ -7,7 +7,7 @@ const ENDPOINT = 'https://api.openai.com/v1/chat/completions'
 // JSON mode; los modelos disponibles se listan en el registry (registry.js).
 const MODELO_DEFAULT = 'gpt-4o-mini'
 
-export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
+export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT, maxTokens = 4096) {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     headers: {
@@ -19,6 +19,7 @@ export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
       temperature: 0.4,
+      max_tokens: maxTokens,
     }),
   })
 
