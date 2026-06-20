@@ -19,7 +19,7 @@ const AUTO_LISTA = [
   'openai/gpt-oss-120b:free',
 ]
 
-export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
+export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT, maxTokens = 4096) {
   // Con AUTO mandamos `models` (lista de fallback); si no, `model` (uno solo).
   const ruteo =
     modelo === AUTO_ID
@@ -38,6 +38,7 @@ export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
       ...ruteo,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.4,
+      max_tokens: maxTokens,
     }),
   })
 

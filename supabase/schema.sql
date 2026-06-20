@@ -38,7 +38,7 @@ create table if not exists contribuciones (
   user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
   repo text not null,
   rama text,
-  tipo_cambio text,                  -- 'features' | 'docs' | 'mercado' | 'codigo' | 'issue'
+  tipo_cambio text,                  -- 'docs' | 'test' | 'good_first_issue' | 'features' | 'fix' | 'a11y' | 'deps' | 'diagrama' | 'skill' | 'onboarding' | 'issue'
   modo text not null,                -- 'A' | 'B' | 'C'
   url_pr text,
   url_issue text,

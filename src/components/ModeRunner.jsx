@@ -82,8 +82,12 @@ function construirTextoA(meta, datos, contenido) {
   if (datos.resumen) lineas.push(datos.resumen, '')
   if (datos.feature_principal)
     lineas.push(`Feature principal: ${datos.feature_principal}`, '')
-  if (datos.principio_violado)
-    lineas.push(`Principio SOLID violado: ${datos.principio_violado}`, '')
+  if (datos.issue_titulo)
+    lineas.push(`Issue: #${datos.issue_numero || ''} ${datos.issue_titulo}`, '')
+  if (datos.funcion_objetivo)
+    lineas.push(`Función sin test: ${datos.funcion_objetivo}`, '')
+  if (datos.problema) lineas.push(`Accesibilidad: ${datos.problema}`, '')
+  if (datos.repro) lineas.push(`Reproducción: ${datos.repro}`, '')
   if (datos.explicacion_cambios) lineas.push(datos.explicacion_cambios, '')
   if (contenido) lineas.push('```', contenido, '```')
   return lineas.join('\n')
@@ -217,7 +221,9 @@ function construirIssue(meta, datos, repo) {
   const titulo =
     `[${meta.tipoCambio}] ` +
     (datos.feature_principal ||
-      datos.principio_violado ||
+      datos.issue_titulo ||
+      datos.funcion_objetivo ||
+      datos.problema ||
       `Propuesta de mejora — ${meta.label}`)
 
   const partes = [

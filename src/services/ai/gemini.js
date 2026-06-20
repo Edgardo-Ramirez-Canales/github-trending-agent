@@ -8,13 +8,16 @@ function endpoint(apiKey, modelo) {
   return `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`
 }
 
-export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT) {
+export async function analizar(prompt, apiKey, modelo = MODELO_DEFAULT, maxTokens = 4096) {
   const res = await fetch(endpoint(apiKey, modelo), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: 'application/json' },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        maxOutputTokens: maxTokens,
+      },
     }),
   })
 
